@@ -5,8 +5,8 @@
 | Thông tin | Nội dung |
 | --- | --- |
 | Khóa/Lớp | K4 - K4-L3-DAY10 |
-| Tên nhóm | DAYTEN |
-| Repository | https://github.com/lamhoangphuc2003st/K4-L3A-Day10-Data-Pipeline-Data-Observability |
+| Tên nhóm | one4all |
+| Repository | https://github.com/lamhoangphuc2003st/K4A-Day10-one4all |
 | Ngày hoàn thành | 2026-09-25 |
 
 ### Thành viên và phân công

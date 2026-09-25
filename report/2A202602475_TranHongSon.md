@@ -7,9 +7,9 @@
 | Họ và tên | Trần Hồng Sơn |
 | MSSV | 2A202602475 |
 | Khóa/Lớp | K4 - K4-L3-DAY10 |
-| Tên nhóm | DAYTEN |
+| Tên nhóm | one4all |
 | Vai trò chính | Corruption & repair owner |
-| Repository | https://github.com/lamhoangphuc2003st/K4-L3A-Day10-Data-Pipeline-Data-Observability |
+| Repository | https://github.com/lamhoangphuc2003st/K4A-Day10-one4all |
 | Ngày hoàn thành | 2026-09-25 |
 
 ## 2. Vai trò và phạm vi công việc

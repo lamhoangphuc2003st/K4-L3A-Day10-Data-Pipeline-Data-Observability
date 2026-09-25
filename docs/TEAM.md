@@ -1,8 +1,8 @@
 # Danh Sách Thành Viên & Báo Cáo Phân Công Nhóm
 
-- **Tên Nhóm:** `DAYTEN`
+- **Tên Nhóm:** `one4all`
 - **Mã Nhóm / Lớp:** `K4-L3-DAY10`
-- **Repository Nộp Bài:** https://github.com/lamhoangphuc2003st/K4-L3A-Day10-Data-Pipeline-Data-Observability
+- **Repository Nộp Bài:** https://github.com/lamhoangphuc2003st/K4A-Day10-one4all
 
 ---
 
