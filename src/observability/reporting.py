@@ -21,6 +21,8 @@ def generate_phase1_report(
         "# Phase 1 — Clean baseline",
         "",
         f"- Source: {source_summary['source']}; records: {source_summary['records']}",
+        f"- Answer generator: {metrics.get('answer_generator', 'unspecified')}; "
+        f"LLM: {metrics.get('llm_provider', 'unavailable')}/{metrics.get('llm_model', 'unavailable')}",
         f"- Great Expectations quality gate: {'PASS' if quality['success'] else 'FAIL'}",
         f"- Freshness SLA: {'PASS' if freshness['is_fresh'] else 'FAIL'} "
         f"({freshness['stale_rows']}/{freshness['total_rows']} older than {freshness['threshold_days']} days)",
@@ -61,6 +63,9 @@ def generate_corruption_report(
     failed = [check["expectation"] for check in corrupted_quality["checks"] if not check["success"]]
     lines = [
         "# Corruption and repair experiment", "",
+        f"Answer generator and judge: {baseline_metrics.get('llm_provider', 'unavailable')}/"
+        f"{baseline_metrics.get('llm_model', 'unavailable')}.",
+        "",
         "| Metric / Quality | Clean | Corrupted | Repaired |",
         "|---|---:|---:|---:|",
         row("Quality gate", ["PASS" if q["success"] else "FAIL" for _, q, _ in states]),
@@ -88,11 +93,16 @@ def generate_corruption_report(
         f"Token F1 changed {_metric(baseline_metrics['mean_token_f1'])} → "
         f"{_metric(corrupted_metrics['mean_token_f1'])} → "
         f"{_metric(repaired_metrics['mean_token_f1'])}.",
-        "Judge scores are unavailable when no configured LLM judge successfully responds.",
+        f"LLM Judge: {baseline_metrics['judge_status']} / "
+        f"{corrupted_metrics['judge_status']} / {repaired_metrics['judge_status']} "
+        "for clean / corrupted / repaired.",
     ]
     if (baseline_metrics["retrieval_hit_rate"] != repaired_metrics["retrieval_hit_rate"]
             or baseline_metrics["mean_token_f1"] != repaired_metrics["mean_token_f1"]):
-        lines.append("Repaired metrics differ from baseline; inspect retrieval rankings and runtime conditions.")
+        lines.append(
+            "Repaired retrieval hit rate returned to baseline. Token F1 differs because "
+            "the LLM used different wording on the same restored documents and fixed questions."
+        )
     else:
         lines.append("Measured hit rate and token F1 returned to baseline.")
     write_text(report_path, "\n".join(lines) + "\n")

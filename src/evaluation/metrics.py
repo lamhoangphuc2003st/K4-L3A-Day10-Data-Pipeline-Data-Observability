@@ -45,12 +45,12 @@ def _token_f1(reference: str, prediction: str) -> float:
     return 2 * precision * recall / (precision + recall)
 
 
-def _judge_answer(settings: Settings, question: str, reference: str, prediction: str) -> JudgeVerdict | None:
+def _judge_answer(judge_llm: Any, item: dict[str, Any], prediction: str) -> JudgeVerdict:
     prompt = f"""
 Evaluate the model answer against the reference answer.
 
-Question: {question}
-Reference answer: {reference}
+Question: {item["question"]}
+Reference answer: {item["ground_truth"]}
 Model answer: {prediction}
 
 Return:
@@ -58,11 +58,10 @@ Return:
 - correct = true only when the answer is materially correct
 - short reasoning
 """.strip()
-    try:
-        llm = build_llm(settings=settings, temperature=0.0).with_structured_output(JudgeVerdict)
-        return llm.invoke(prompt)
-    except Exception:
-        return None
+    verdict = judge_llm.invoke(prompt)
+    if not isinstance(verdict, JudgeVerdict):
+        raise RuntimeError("LLM judge did not return a valid structured verdict")
+    return verdict
 
 
 def _run_ragas(settings: Settings, answers: list[dict[str, Any]]) -> dict[str, Any]:
@@ -111,10 +110,12 @@ def evaluate_pipeline(
            for item in test_set):
         raise ValueError(f"Test set has invalid questions: {test_set_path}")
     answers: list[dict[str, Any]] = []
+    llm = build_llm(settings=settings, temperature=0.0)
+    judge_llm = llm.with_structured_output(JudgeVerdict)
 
     for item in test_set:
-        result = answer_question(item["question"], settings=settings, index=index)
-        judge = _judge_answer(settings, item["question"], item["ground_truth"], result.answer)
+        result = answer_question(item["question"], index, llm)
+        judge = _judge_answer(judge_llm, item, result.answer)
         retrieval_hit = any(doc_id in item["ground_truth_doc_ids"] for doc_id in result.retrieved_doc_ids)
         answers.append(
             {
@@ -128,23 +129,22 @@ def evaluate_pipeline(
                 "retrieved_contexts": result.retrieved_contexts,
                 "retrieval_hit": retrieval_hit,
                 "token_f1": _token_f1(item["ground_truth"], result.answer),
-                "judge": judge.model_dump() if judge else None,
+                "judge": judge.model_dump(),
             }
         )
+        print(f"LLM evaluation: {index.collection_name} {item['id']} complete", flush=True)
 
     summary = {
         "samples": len(answers),
         "retrieval_hit_rate": mean(1.0 if item["retrieval_hit"] else 0.0 for item in answers),
         "mean_token_f1": mean(item["token_f1"] for item in answers),
-        "judge_accuracy": None,
-        "mean_judge_score": None,
-        "judge_status": "unavailable",
+        "judge_accuracy": mean(1.0 if item["judge"]["correct"] else 0.0 for item in answers),
+        "mean_judge_score": mean(item["judge"]["score"] for item in answers),
+        "judge_status": f"available ({len(answers)}/{len(answers)})",
+        "answer_generator": "llm",
+        "llm_provider": settings.llm_provider,
+        "llm_model": settings.model_name,
     }
-    judged = [item["judge"] for item in answers if item["judge"] is not None]
-    if judged:
-        summary["judge_accuracy"] = mean(1.0 if item["correct"] else 0.0 for item in judged)
-        summary["mean_judge_score"] = mean(item["score"] for item in judged)
-        summary["judge_status"] = f"available ({len(judged)}/{len(answers)})"
     summary["ragas"] = _run_ragas(settings, answers)
 
     bundle = EvaluationBundle(summary=summary, answers=answers)

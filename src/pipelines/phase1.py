@@ -29,7 +29,8 @@ def main() -> None:
                "duplicates": int(clean["paper_id"].duplicated().sum()), "missing_ids": 0}
     write_json(settings.paths.baseline_metrics, metrics)
     generate_phase1_report(settings.paths.baseline_report,
-                           {"source": settings.source_api, "records": len(records)},
+                           {"source": "Crossref API or snapshot fallback" if settings.refresh_source
+                            else "offline Crossref snapshot", "records": len(records)},
                            metrics, quality, freshness)
     print(f"Baseline: {len(clean)} papers, hit rate {metrics['retrieval_hit_rate']:.3f}, "
           f"token F1 {metrics['mean_token_f1']:.3f}")

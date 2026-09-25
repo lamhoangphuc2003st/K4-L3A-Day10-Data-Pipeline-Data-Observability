@@ -1,10 +1,13 @@
 {
   "samples": 10,
   "retrieval_hit_rate": 0.5,
-  "mean_token_f1": 0.6879832810867293,
-  "judge_accuracy": null,
-  "mean_judge_score": null,
-  "judge_status": "unavailable",
+  "mean_token_f1": 0.23187960687960688,
+  "judge_accuracy": 0.5,
+  "mean_judge_score": 3,
+  "judge_status": "available (10/10)",
+  "answer_generator": "llm",
+  "llm_provider": "opencode_go",
+  "llm_model": "glm-5.3-flash",
   "ragas": {
     "skipped": "Set RUN_RAGAS=1 to enable the slower Ragas pass."
   },

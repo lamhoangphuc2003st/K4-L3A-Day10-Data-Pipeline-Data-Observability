@@ -4,6 +4,7 @@ from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
+from uuid import uuid4
 
 from core.config import Settings, normalized_provider, require_llm_credentials
 
@@ -36,6 +37,17 @@ def build_llm(settings: Settings, temperature: float = 0.0):
             api_key=settings.openrouter_api_key,
             base_url=settings.openrouter_base_url,
             temperature=temperature,
+        )
+    if provider == "opencode_go":
+        return ChatOpenAI(
+            model=settings.model_name,
+            api_key=settings.opencode_api_key,
+            base_url="https://opencode.ai/zen/go/v1",
+            temperature=temperature,
+            default_headers={
+                "x-opencode-session": str(uuid4()),
+                "User-Agent": "day10-rag-evaluation/1.0",
+            },
         )
     if provider == "ollama":
         return ChatOllama(

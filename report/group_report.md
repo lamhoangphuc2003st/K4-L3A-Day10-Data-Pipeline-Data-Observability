@@ -8,9 +8,9 @@
 
 ## 2. Tóm tắt kết quả
 
-Pipeline dùng snapshot Crossref 24 bài để chạy ổn định khi không có mạng; chế độ live API đã được thử riêng với hai bài và hai file raw tạm. Dữ liệu được parse, chuẩn hóa, khử DOI trùng, tính tuổi bài báo và ghép văn bản cho MiniLM. Great Expectations 1.x kiểm tra số dòng, các cột bắt buộc, DOI duy nhất và độ dài summary; thêm tín hiệu noise, title ngắn, thiếu DOI so với raw và freshness SLA. Dữ liệu baseline vượt quality gate trước khi vào ChromaDB. Bộ 10 câu hỏi gồm summary, authors, date, categories được giữ cố định qua ba lần đánh giá.
+Pipeline dùng snapshot Crossref 24 bài khi Crossref API không có sẵn; chế độ live API đã được thử riêng với hai bài và hai file raw tạm. Dữ liệu được parse, chuẩn hóa, khử DOI trùng, tính tuổi bài báo và ghép văn bản cho MiniLM. Great Expectations 1.x kiểm tra số dòng, các cột bắt buộc, DOI duy nhất và độ dài summary; thêm tín hiệu noise, title ngắn, thiếu DOI so với raw và freshness SLA. Dữ liệu baseline vượt quality gate trước khi vào ChromaDB. Bộ 10 câu hỏi gồm summary, authors, date, categories được giữ cố định qua ba lần đánh giá.
 
-Trong thí nghiệm, sáu lỗi được tiêm trên bản sao clean. Hit Rate giảm từ 1.000 xuống 0.500, Token F1 từ 0.953 xuống 0.688. Quality gate và freshness đều báo FAIL. Dữ liệu lỗi chỉ được index trong collection riêng phục vụ thí nghiệm. Repair đọc lại raw records, làm sạch và index lại, đưa Hit Rate về 1.000 và Token F1 về 0.953. LLM Judge không có provider hoạt động nên score được ghi là unavailable, không tính điểm giả. Tên nhóm và thông tin nộp bài là phần duy nhất nhóm cần bổ sung.
+Trong thí nghiệm, sáu lỗi được tiêm trên bản sao clean. Hit Rate giảm từ 1.000 xuống 0.500, Token F1 từ 0.613 xuống 0.232 và LLM Judge từ 5 xuống 3. Quality gate và freshness đều báo FAIL. Dữ liệu lỗi chỉ được index trong collection riêng phục vụ thí nghiệm. Repair đọc lại raw records, làm sạch và index lại, đưa Hit Rate về 1.000, Token F1 lên 0.729 và LLM Judge về 5. Benchmark dùng OpenCode Go với model GLM-5.3-Flash để tạo câu trả lời và chấm Judge. Tên nhóm và thông tin nộp bài là phần duy nhất nhóm cần bổ sung.
 
 ## 3. Kiến trúc và data contract
 
@@ -28,9 +28,9 @@ Raw record gồm `paper_id`, `title`, `summary`, `authors`, `categories`, `publi
 - Embedding model: `sentence-transformers/all-MiniLM-L6-v2`; top K: 4.
 - `python script/run_phase1.py`: PASS.
 - `python script/run_corruption_flow.py`: PASS.
-- `python -m unittest discover -s tests -v`: 2 PASS.
+- `python -m unittest discover -s tests -v`: 3 PASS.
 - Offline mặc định; `REFRESH_SOURCE=1` kích hoạt Crossref live API. Live đã được kiểm tra với file tạm, không thay snapshot.
-- LLM provider mặc định là Gemini nhưng chưa có API key; LLM Judge unavailable. Không đưa key vào repo.
+- LLM provider: OpenCode Go; model: glm-5.3-flash. API key chỉ nằm trong file .env bị Git bỏ qua.
 
 ## 5. Quality, freshness và benchmark
 
@@ -42,8 +42,9 @@ Raw record gồm `paper_id`, `title`, `summary`, `authors`, `categories`, `publi
 | Missing DOI so với raw | 0 | 5 | 0 |
 | Duplicate DOI | 0 | 2 | 0 |
 | Hit Rate | 1.000 | 0.500 | 1.000 |
-| Token F1 | 0.953 | 0.688 | 0.953 |
-| LLM Judge | unavailable | unavailable | unavailable |
+| Token F1 | 0.613 | 0.232 | 0.729 |
+| LLM Judge score | 5 | 3 | 5 |
+| LLM Judge accuracy | 1.0 | 0.5 | 1.0 |
 
 Freshness FAIL khi tỷ lệ bài quá 180 ngày vượt 25%. Trong corruption, tỷ lệ stale là 10/21 = 47.6%. GX phát hiện duplicate DOI và summary thiếu; kiểm tra bổ sung phát hiện noise, title ngắn và thiếu DOI so với raw.
 
@@ -58,11 +59,11 @@ Freshness FAIL khi tỷ lệ bài quá 180 ngày vượt 25%. Trong corruption, 
 | Stale date (365 ngày) | 8 | Freshness FAIL |
 | Duplicate rows | 2 | GX uniqueness FAIL |
 
-Log lưu DOI, before/after và count ở `data/results/corruption_log.json`. Repair không chỉnh từng dòng lỗi; nó đọc `data/raw/crossref_records.json`, chạy lại cleaning, quality/freshness, rồi thay dữ liệu trong collection repaired. Lần chạy lặp cho cùng hash của clean CSV, repaired CSV, test set và ba file metrics; Chroma giữ 24/21/24 documents theo từng collection.
+Log lưu DOI, before/after và count ở data/results/corruption_log.json. Repair không chỉnh từng dòng lỗi; nó đọc data/raw/crossref_records.json, chạy lại cleaning, quality/freshness, rồi thay dữ liệu trong collection repaired. Chroma giữ 24/21/24 documents theo từng collection. Hit Rate và Judge phục hồi; Token F1 sau repair khác baseline vì LLM diễn đạt câu trả lời khác nhau dù cùng dữ liệu và test set.
 
 ## 7. Vấn đề tích hợp và giới hạn
 
 - Model MiniLM chưa có trong cache; sau khi cho phép truy cập Hugging Face, model được tải và pipeline chạy được offline từ cache.
 - QA starter ưu tiên khớp title trước vector search; đã bỏ đường tắt này trong benchmark để Hit Rate phản ánh Chroma retrieval thực.
-- Judge starter dùng heuristic khi LLM lỗi; đã thay bằng `null`/unavailable để không trình bày điểm heuristic như LLM Judge.
+- Judge starter dùng heuristic khi LLM lỗi; đã thay bằng phép chấm có cấu trúc từ OpenCode Go. Câu trả lời RAG cũng được sinh từ ngữ cảnh truy xuất bằng LLM.
 - Nhóm cần tự điền danh tính, phân công trong `docs/TEAM.md`, báo cáo cá nhân và link repo/LMS. Chưa thể xác nhận các bước nộp bài đó.

@@ -50,6 +50,7 @@ class Settings:
     openai_api_key: str | None
     anthropic_api_key: str | None
     openrouter_api_key: str | None
+    opencode_api_key: str | None
     openrouter_base_url: str
     ollama_base_url: str
     custom_llm_api_key: str | None
@@ -75,8 +76,8 @@ def load_settings(project_dir: Path | None = None) -> Settings:
     freshness_threshold_days = 180
     source_from_date = (datetime.now(UTC).date() - timedelta(days=freshness_threshold_days)).isoformat()
 
-    load_dotenv(workspace / ".env")
-    load_dotenv(root / ".env", override=False)
+    load_dotenv(root / ".env")
+    load_dotenv(workspace / ".env", override=False)
 
     data_dir = root / "data"
     paths = Paths(
@@ -113,12 +114,13 @@ def load_settings(project_dir: Path | None = None) -> Settings:
     )
 
     return Settings(
-        llm_provider=os.getenv("LLM_PROVIDER", "gemini"),
-        model_name=os.getenv("LLM_MODEL", "gemini-2.5-flash"),
+        llm_provider=os.getenv("LLM_PROVIDER", "opencode_go"),
+        model_name=os.getenv("LLM_MODEL", "glm-5.3-flash"),
         google_api_key=os.getenv("GOOGLE_API_KEY"),
         openai_api_key=os.getenv("OPENAI_API_KEY"),
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
         openrouter_api_key=os.getenv("OPENROUTER_API_KEY"),
+        opencode_api_key=os.getenv("OPENCODE_API_KEY"),
         openrouter_base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
         ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
         custom_llm_api_key=os.getenv("CUSTOM_LLM_API_KEY"),
@@ -141,6 +143,8 @@ def load_settings(project_dir: Path | None = None) -> Settings:
 
 def normalized_provider(settings: Settings) -> str:
     provider = settings.llm_provider.strip().lower().replace(" ", "").replace("-", "")
+    if provider in {"opencode", "opencode_go", "opencodego"}:
+        return "opencode_go"
     if provider == "anthorpic":
         return "anthropic"
     if provider == "customllm":
@@ -166,6 +170,10 @@ def require_llm_credentials(settings: Settings) -> None:
         if settings.openrouter_api_key:
             return
         raise RuntimeError("OPENROUTER_API_KEY is required when LLM_PROVIDER=openrouter.")
+    if provider == "opencode_go":
+        if settings.opencode_api_key:
+            return
+        raise RuntimeError("OPENCODE_API_KEY is required when LLM_PROVIDER=opencode_go.")
     if provider in {"mock", "ollama"}:
         return
     if provider == "custom":
@@ -173,5 +181,5 @@ def require_llm_credentials(settings: Settings) -> None:
             return
         raise RuntimeError("CUSTOM_LLM_BASE_URL is required when LLM_PROVIDER=custom.")
     raise RuntimeError(
-        "Unsupported LLM_PROVIDER. Expected one of: openai, gemini, anthropic, openrouter, ollama, custom, mock."
+        "Unsupported LLM_PROVIDER. Expected one of: openai, gemini, anthropic, openrouter, opencode_go, ollama, custom, mock."
     )

@@ -7,7 +7,7 @@
     "ground_truth_doc_ids": [
       "10.1145/3637528.3671812"
     ],
-    "answer": "",
+    "answer": "I don't know from the indexed corpus.",
     "retrieved_doc_ids": [
       "10.1145/3637528.3671824",
       "10.1145/3637528.3671817",
@@ -22,7 +22,11 @@
     ],
     "retrieval_hit": false,
     "token_f1": 0.0,
-    "judge": null
+    "judge": {
+      "score": 1,
+      "correct": false,
+      "reasoning": "The model answer is an abstention ('I don't know') rather than an attempt to summarize the paper. The reference answer provides a substantive summary: static benchmarks fail to capture domain drift in enterprise knowledge bases. Since the model answer contains no correct content and fails to engage with the question, it cannot be considered materially correct."
+    }
   },
   {
     "id": "eval_002",
@@ -32,7 +36,7 @@
     "ground_truth_doc_ids": [
       "10.1145/3637528.3671808"
     ],
-    "answer": "Phong Vu, Ngan Hoang",
+    "answer": "I don't know from the indexed corpus.",
     "retrieved_doc_ids": [
       "10.1145/3637528.3671820",
       "10.1145/3637528.3671813",
@@ -46,8 +50,12 @@
       "Title: Advanced Perspectives on Freshness SLAs for Real-Time LLM Knowledge Augmentation\nAuthors: Bao Do, Linh Ngo\nPublished: 2026-06-04\nCategories: Data Management, Artificial Intelligence\nSummary: An extended empirical study on e define freshness service-level agreements (SLAs) for temporal document ingestion. By tracking document age and update cadence, our orchestrator dynamically prioritizes recrawling high-churn technical corpora Further analysis on scaling parameters."
     ],
     "retrieval_hit": false,
-    "token_f1": 1.0,
-    "judge": null
+    "token_f1": 0.0,
+    "judge": {
+      "score": 1,
+      "correct": false,
+      "reasoning": "The model answer is an abstention ('I don't know') rather than the actual authors (Phong Vu, Ngan Hoang). While it avoids hallucinating incorrect information, it fails to provide the correct answer and is therefore not materially correct. Score: 1."
+    }
   },
   {
     "id": "eval_003",
@@ -57,7 +65,7 @@
     "ground_truth_doc_ids": [
       "10.1145/3637528.3671804"
     ],
-    "answer": "2026-06-04",
+    "answer": "I don't know from the indexed corpus.",
     "retrieved_doc_ids": [
       "10.1145/3637528.3671816",
       "10.1145/3637528.3671820",
@@ -71,8 +79,12 @@
       "Title: Advanced Perspectives on Data Observability and Quality Gates for Production RAG Systems\nAuthors: Anh Tran, Quoc Pham\nPublished: 2026-06-02\nCategories: Software Engineering, Data Systems\nSummary: An extended empirical study on ilent data corruption in RAG pipelines degrades LLM answer faithfulness without throwing runtime errors. We introduce automated quality gates using Great Expectations 1.x to catch stale and malformed embeddings before serving Further analysis on scaling parameters."
     ],
     "retrieval_hit": false,
-    "token_f1": 0.3333333333333333,
-    "judge": null
+    "token_f1": 0.0,
+    "judge": {
+      "score": 1,
+      "correct": false,
+      "reasoning": "The model declined to answer, while the reference provides a specific publication date (2026-07-05). A refusal does not match the reference answer, so it is not materially correct. Score 1: the response is honest about lacking the information but fails to provide the requested fact."
+    }
   },
   {
     "id": "eval_004",
@@ -82,7 +94,7 @@
     "ground_truth_doc_ids": [
       "10.1145/3637528.3671807"
     ],
-    "answer": "Robustness, Information Retrieval",
+    "answer": "The paper 'Advanced Perspectives on Synthetic Corruption Testing: Stress-Testing Vector Search Robustness' is categorized under: Robustness, Information Retrieval.",
     "retrieved_doc_ids": [
       "10.1145/3637528.3671819",
       "10.1145/3637528.3671814",
@@ -96,8 +108,12 @@
       "Title: Automa\nAuthors: Son Nguyen, Thuy Doan\nPublished: 2025-09-25\nCategories: Data Quality, DevOps\nSummary: Embedding quality checks directly into data pipelines enables fail-closed governance. We show how Great Expectations suites catch schema drifts and null fields before documents reach the embedding model."
     ],
     "retrieval_hit": false,
-    "token_f1": 1.0,
-    "judge": null
+    "token_f1": 0.2727272727272727,
+    "judge": {
+      "score": 5,
+      "correct": true,
+      "reasoning": "The model answer correctly identifies both categories from the reference answer: Robustness and Information Retrieval. The only discrepancy is a slight title variation ('Advanced Perspectives on...' prefix), but the paper is clearly the same one and the requested categories are fully and accurately provided."
+    }
   },
   {
     "id": "eval_005",
@@ -107,7 +123,7 @@
     "ground_truth_doc_ids": [
       "10.1145/3637528.3671802"
     ],
-    "answer": "An extended empirical study on ilent data corruption in RAG pipelines degrades LLM answer faithfulness without throwing runtime errors.",
+    "answer": "I don't know from the indexed corpus.",
     "retrieved_doc_ids": [
       "10.1145/3637528.3671814",
       "10.1145/3637528.3671816",
@@ -121,8 +137,12 @@
       "Title: Automa\nAuthors: Son Nguyen, Thuy Doan\nPublished: 2025-09-25\nCategories: Data Quality, DevOps\nSummary: Embedding quality checks directly into data pipelines enables fail-closed governance. We show how Great Expectations suites catch schema drifts and null fields before documents reach the embedding model."
     ],
     "retrieval_hit": false,
-    "token_f1": 0.7878787878787878,
-    "judge": null
+    "token_f1": 0.0,
+    "judge": {
+      "score": 1,
+      "correct": false,
+      "reasoning": "The model answer is a refusal ('I don't know from the indexed corpus') and does not provide any substantive content. The reference answer identifies the paper's key point: silent data corruption in RAG pipelines degrades LLM answer faithfulness without throwing runtime errors. The model answer fails to convey any of this information, so it is not materially correct."
+    }
   },
   {
     "id": "eval_006",
@@ -132,7 +152,7 @@
     "ground_truth_doc_ids": [
       "10.1145/3637528.3671824"
     ],
-    "answer": "Quang Le, Yen Vu",
+    "answer": "Quang Le and Yen Vu authored the paper 'Advanced Perspectives on Continuous Benchmark Evaluation for Enterprise Retrieval Pipelines'.",
     "retrieved_doc_ids": [
       "10.1145/3637528.3671824",
       "10.1145/3637528.3671817",
@@ -146,8 +166,12 @@
       "Title: Evaluating Retrieval Precision with Token F1 and LLM Judges\nAuthors: Tuan Phan, Mai Bui\nPublished: 2026-03-28\nCategories: Natural Language Processing, Evaluation Methodology\nSummary: Evaluating open-domain QA requires robust metrics. We benchmark semantic similarity, token-level overlap F1, and model-based judge verdicts to quantify RAG answer correctness across noisy corpus conditions."
     ],
     "retrieval_hit": true,
-    "token_f1": 1.0,
-    "judge": null
+    "token_f1": 0.3636363636363636,
+    "judge": {
+      "score": 5,
+      "correct": true,
+      "reasoning": "The model answer correctly identifies both authors (Quang Le and Yen Vu) named in the reference answer, and correctly associates them with the specified paper. The content is fully consistent with the reference; only phrasing differs."
+    }
   },
   {
     "id": "eval_007",
@@ -157,7 +181,7 @@
     "ground_truth_doc_ids": [
       "10.1145/3637528.3671823"
     ],
-    "answer": "2025-09-25",
+    "answer": "The paper 'Advanced Perspectives on Hybrid Search Architectures: Combining BM25 with Dense Representations' was published on 2025-09-25.",
     "retrieved_doc_ids": [
       "10.1145/3637528.3671823",
       "10.1145/3637528.3671811",
@@ -172,7 +196,11 @@
     ],
     "retrieval_hit": true,
     "token_f1": 0.0,
-    "judge": null
+    "judge": {
+      "score": 1,
+      "correct": false,
+      "reasoning": "The model answer gives a publication date of 2025-09-25, which does not match the reference date of 2026-06-11. The dates differ by nearly a year, so the answer is materially incorrect."
+    }
   },
   {
     "id": "eval_008",
@@ -197,7 +225,11 @@
     ],
     "retrieval_hit": true,
     "token_f1": 1.0,
-    "judge": null
+    "judge": {
+      "score": 5,
+      "correct": true,
+      "reasoning": "The model answer exactly matches the reference answer: 'Data Quality, DevOps'. Both categories are correctly identified with no omissions or additions."
+    }
   },
   {
     "id": "eval_009",
@@ -207,7 +239,7 @@
     "ground_truth_doc_ids": [
       "10.1145/3637528.3671821"
     ],
-    "answer": "Hierarchical and semantic boundary chunking preserves code block contexts and markdown headings.",
+    "answer": "The paper 'Advanced Perspectives on Chunking Strategies for Technical Documentation Retrieval' (Long Trinh, Ha Chu, 2025-09-25) is an extended empirical study on hierarchical and semantic boundary chunking, which preserves code block contexts and markdown headings. Its benchmark demonstrates superior top-1 recall compared to fixed character length sliding windows, with further analysis on scaling parameters.",
     "retrieved_doc_ids": [
       "10.1145/3637528.3671809",
       "10.1145/3637528.3671821",
@@ -221,8 +253,12 @@
       "Title: Evaluating Retrieval Precision with Token F1 and LLM Judges\nAuthors: Tuan Phan, Mai Bui\nPublished: 2026-03-28\nCategories: Natural Language Processing, Evaluation Methodology\nSummary: Evaluating open-domain QA requires robust metrics. We benchmark semantic similarity, token-level overlap F1, and model-based judge verdicts to quantify RAG answer correctness across noisy corpus conditions."
     ],
     "retrieval_hit": true,
-    "token_f1": 0.7586206896551724,
-    "judge": null
+    "token_f1": 0.4324324324324324,
+    "judge": {
+      "score": 5,
+      "correct": true,
+      "reasoning": "The model answer fully captures the reference summary: it identifies the paper as an extended empirical study on hierarchical and semantic boundary chunking that preserves code block contexts and markdown headings. It also adds consistent, plausible details (authors, date, benchmark findings on top-1 recall vs. sliding windows) that do not contradict the reference. No factual conflicts are present."
+    }
   },
   {
     "id": "eval_010",
@@ -232,7 +268,7 @@
     "ground_truth_doc_ids": [
       "10.1145/3637528.3671810"
     ],
-    "answer": "Son Nguyen, Thuy Doan",
+    "answer": "Son Nguyen and Thuy Doan authored the paper (listed as \"Advanced Perspectives on Automated Data Quality Profiling with Great Expectations in CI/CD\", paper_id 10.1145/3637528.3671822).",
     "retrieved_doc_ids": [
       "10.1145/3637528.3671822",
       "10.1145/3637528.3671810",
@@ -246,7 +282,11 @@
       "Title: Advanced Perspectives on Continuous Benchmark Evaluation for Enterprise Retrieval Pipelines\nAuthors: Quang Le, Yen Vu\nPublished: 2025-09-25\nCategories: Evaluation Methodology, Enterprise Systems\nSummary: "
     ],
     "retrieval_hit": true,
-    "token_f1": 1.0,
-    "judge": null
+    "token_f1": 0.25,
+    "judge": {
+      "score": 5,
+      "correct": true,
+      "reasoning": "The model answer correctly identifies both authors (Son Nguyen and Thuy Doan) as requested. It adds extra detail (a slightly different title and a paper ID) that is not in the reference, but this does not contradict the core answer about authorship."
+    }
   }
 ]

@@ -1,5 +1,7 @@
 # Corruption and repair experiment
 
+Answer generator and judge: opencode_go/glm-5.3-flash.
+
 | Metric / Quality | Clean | Corrupted | Repaired |
 |---|---:|---:|---:|
 | Quality gate | PASS | FAIL | PASS |
@@ -8,8 +10,8 @@
 | Missing IDs | 0 | 5 | 0 |
 | Duplicate IDs | 0 | 2 | 0 |
 | Hit rate | 1.000 | 0.500 | 1.000 |
-| Token F1 | 0.953 | 0.688 | 0.953 |
-| LLM judge | unavailable | unavailable | unavailable |
+| Token F1 | 0.613 | 0.232 | 0.729 |
+| LLM judge | 5 | 3 | 5 |
 
 ## Injected errors
 
@@ -26,6 +28,6 @@ GX / integrity failures: ExpectColumnValuesToBeUnique, ExpectColumnValueLengthsT
 Freshness detected 10 stale rows (47.6%; maximum 25%).
 Corrupted data was indexed only in an isolated experiment collection after its failed gate. Repair rebuilt the clean dataframe from preserved raw records and replaced the repaired collection.
 Hit rate changed 1.000 → 0.500 → 1.000.
-Token F1 changed 0.953 → 0.688 → 0.953.
-Judge scores are unavailable when no configured LLM judge successfully responds.
-Measured hit rate and token F1 returned to baseline.
+Token F1 changed 0.613 → 0.232 → 0.729.
+LLM Judge: available (10/10) / available (10/10) / available (10/10) for clean / corrupted / repaired.
+Repaired retrieval hit rate returned to baseline. Token F1 differs because the LLM used different wording on the same restored documents and fixed questions.
