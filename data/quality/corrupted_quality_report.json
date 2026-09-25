@@ -1,0 +1,57 @@
+{
+  "report_name": "corrupted",
+  "success": false,
+  "failed_checks": [
+    "paper_id_unique",
+    "summary_length_min_30"
+  ],
+  "checks": [
+    {
+      "check": "row_count_between_5_and_5000",
+      "success": true,
+      "unexpected_count": null,
+      "observed_value": 22
+    },
+    {
+      "check": "paper_id_not_null",
+      "success": true,
+      "unexpected_count": 0,
+      "observed_value": null
+    },
+    {
+      "check": "title_not_null",
+      "success": true,
+      "unexpected_count": 0,
+      "observed_value": null
+    },
+    {
+      "check": "text_for_embedding_not_null",
+      "success": true,
+      "unexpected_count": 0,
+      "observed_value": null
+    },
+    {
+      "check": "paper_id_unique",
+      "success": false,
+      "unexpected_count": 6,
+      "observed_value": null
+    },
+    {
+      "check": "summary_length_min_30",
+      "success": false,
+      "unexpected_count": 2,
+      "observed_value": null
+    }
+  ],
+  "freshness": {
+    "latest_published": "2026-06-12",
+    "oldest_published": "2025-05-02",
+    "stale_threshold_days": 180,
+    "stale_rows": 4,
+    "total_rows": 22,
+    "stale_ratio": 0.1818,
+    "max_stale_ratio": 0.25,
+    "is_fresh": true
+  },
+  "alert": true
+}

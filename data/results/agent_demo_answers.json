@@ -1,0 +1,10 @@
+[
+  {
+    "question": "What is the summary of the paper 'Continuous Benchmark Evaluation for Enterprise Retrieval Pipelines'?",
+    "answer": "Static benchmarks fail to capture domain drift in enterprise knowledge bases."
+  },
+  {
+    "question": "Who authored the paper 'Freshness SLAs for Real-Time LLM Knowledge Augmentation'?",
+    "answer": "Bao Do, Linh Ngo"
+  }
+]
