@@ -1,0 +1,53 @@
+[
+  {
+    "id": "eval_001",
+    "type": "summary",
+    "question_type": "summary",
+    "question": "What is the summary of the paper 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study'?",
+    "ground_truth": "Abstract Diagnosing jawbone lesions in oral and maxillofacial radiology remains challenging due to overlapping radiological features and the need for integrated clinical reasoning.",
+    "ground_truth_doc_ids": [
+      "10.1007/s10278-026-02086-9"
+    ]
+  },
+  {
+    "id": "eval_002",
+    "type": "authors",
+    "question_type": "authors",
+    "question": "Who authored the paper 'DOLPHIN: A Privacy-Preserving Digital Investigation Readiness Assessment Framework based on Offline Large Language Models and Retrieval-Augmented Generation'?",
+    "ground_truth": "Divya K",
+    "ground_truth_doc_ids": [
+      "10.21203/rs.3.rs-10489777/v1"
+    ]
+  },
+  {
+    "id": "eval_003",
+    "type": "date",
+    "question_type": "date",
+    "question": "When was the paper 'An Agentic Retrieval-Augmented Vision-Language Recommendation System for Hyperdimensional Encoding Optimization' published?",
+    "ground_truth": "2026-08-26",
+    "ground_truth_doc_ids": [
+      "10.20944/preprints202608.1849.v1"
+    ]
+  },
+  {
+    "id": "eval_004",
+    "type": "category",
+    "question_type": "category",
+    "question": "Which subject categories does Crossref list for the paper 'Retrieval-Augmented Large Language Model Agents for Automated Scientific Literature Review Generation'?",
+    "ground_truth": "No subject categories are listed by Crossref.",
+    "ground_truth_doc_ids": [
+      "10.20944/preprints202604.0339.v1"
+    ]
+  },
+  {
+    "id": "eval_005",
+    "type": "multi_hop",
+    "question_type": "multi_hop",
+    "question": "Which term appears in both paper titles 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study' and '0346 Retrieval Augmented Generation Improves Large Language Model Performance in Sleep Medicine'?",
+    "ground_truth": "generation",
+    "ground_truth_doc_ids": [
+      "10.1007/s10278-026-02086-9",
+      "10.1093/sleep/zsag091.0346"
+    ]
+  }
+]

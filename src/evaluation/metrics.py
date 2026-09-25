@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections import Counter
 from statistics import mean
 import os
 import sys
@@ -22,6 +23,8 @@ class JudgeVerdict(BaseModel):
     score: int = Field(ge=1, le=5)
     correct: bool
     reasoning: str
+    method: str = "llm"
+    error: str | None = None
 
 
 @dataclass(frozen=True)
@@ -35,13 +38,13 @@ def _token_f1(reference: str, prediction: str) -> float:
     pred_tokens = normalize_whitespace(prediction).lower().split()
     if not ref_tokens or not pred_tokens:
         return 0.0
-    ref_set = set(ref_tokens)
-    pred_set = set(pred_tokens)
-    overlap = len(ref_set & pred_set)
+    ref_counts = Counter(ref_tokens)
+    pred_counts = Counter(pred_tokens)
+    overlap = sum((ref_counts & pred_counts).values())
     if overlap == 0:
         return 0.0
-    precision = overlap / len(pred_set)
-    recall = overlap / len(ref_set)
+    precision = overlap / len(pred_tokens)
+    recall = overlap / len(ref_tokens)
     return 2 * precision * recall / (precision + recall)
 
 
@@ -61,12 +64,14 @@ Return:
     try:
         llm = build_llm(settings=settings, temperature=0.0).with_structured_output(JudgeVerdict)
         return llm.invoke(prompt)
-    except Exception:
+    except Exception as exc:
         score = 5 if _token_f1(reference, prediction) >= 0.95 else 3 if _token_f1(reference, prediction) >= 0.5 else 1
         return JudgeVerdict(
             score=score,
             correct=score >= 3,
             reasoning="Fallback heuristic judge used because the LLM evaluator was unavailable.",
+            method="heuristic_fallback",
+            error=f"{type(exc).__name__}: {exc}",
         )
 
 
@@ -113,11 +118,15 @@ def evaluate_pipeline(
     for item in test_set:
         result = answer_question(item["question"], settings=settings, index=index)
         judge = _judge_answer(settings, item["question"], item["ground_truth"], result.answer)
-        retrieval_hit = any(doc_id in item["ground_truth_doc_ids"] for doc_id in result.retrieved_doc_ids)
+        required = set(item["ground_truth_doc_ids"])
+        retrieval_hit = required <= set(result.retrieved_doc_ids)
+        vector_results = index.search(item["question"], top_k=settings.top_k)
+        vector_ids = [record.paper_id for record in vector_results]
+        vector_hit = required <= set(vector_ids)
         answers.append(
             {
                 "id": item["id"],
-                "question_type": item["question_type"],
+                "question_type": item.get("question_type") or item["type"],
                 "question": item["question"],
                 "ground_truth": item["ground_truth"],
                 "ground_truth_doc_ids": item["ground_truth_doc_ids"],
@@ -125,6 +134,8 @@ def evaluate_pipeline(
                 "retrieved_doc_ids": result.retrieved_doc_ids,
                 "retrieved_contexts": result.retrieved_contexts,
                 "retrieval_hit": retrieval_hit,
+                "vector_retrieved_doc_ids": vector_ids,
+                "vector_retrieval_hit": vector_hit,
                 "token_f1": _token_f1(item["ground_truth"], result.answer),
                 "judge": judge.model_dump(),
             }
@@ -133,9 +144,13 @@ def evaluate_pipeline(
     summary = {
         "samples": len(answers),
         "retrieval_hit_rate": mean(1.0 if item["retrieval_hit"] else 0.0 for item in answers),
+        "retrieval_hit_rate_method": "hybrid_exact_title_plus_vector; all required documents must be retrieved",
+        "vector_retrieval_hit_rate": mean(1.0 if item["vector_retrieval_hit"] else 0.0 for item in answers),
         "mean_token_f1": mean(item["token_f1"] for item in answers),
         "judge_accuracy": mean(1.0 if item["judge"]["correct"] else 0.0 for item in answers),
         "mean_judge_score": mean(item["judge"]["score"] for item in answers),
+        "judge_methods": {method: sum(item["judge"]["method"] == method for item in answers)
+                          for method in sorted({item["judge"]["method"] for item in answers})},
     }
     summary["ragas"] = _run_ragas(settings, answers)
 

@@ -1,0 +1,15 @@
+{
+  "samples": 5,
+  "retrieval_hit_rate": 1.0,
+  "retrieval_hit_rate_method": "hybrid_exact_title_plus_vector; all required documents must be retrieved",
+  "vector_retrieval_hit_rate": 1.0,
+  "mean_token_f1": 1.0,
+  "judge_accuracy": 1.0,
+  "mean_judge_score": 5,
+  "judge_methods": {
+    "llm": 5
+  },
+  "ragas": {
+    "skipped": "Set RUN_RAGAS=1 to enable the slower Ragas pass."
+  }
+}

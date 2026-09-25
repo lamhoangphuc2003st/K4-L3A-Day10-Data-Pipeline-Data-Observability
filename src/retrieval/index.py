@@ -26,19 +26,31 @@ class LocalEmbeddingIndex:
         self,
         settings: Settings,
         collection_name: str,
-        documents: list[dict[str, Any]],
-        persist_path: Path,
+        documents: list[dict[str, Any]] | None = None,
+        persist_path: Path | None = None,
     ):
         self.settings = settings
         self.collection_name = collection_name
-        self.documents = documents
-        self.persist_path = persist_path
+        self.documents = documents or []
+        self.persist_path = persist_path or settings.paths.chroma_dir
         self.embedding_backend = "chroma"
         self.embedding_model = MiniLMEmbeddings(settings.embedding_model)
-        self.client = chromadb.PersistentClient(path=str(persist_path))
-        self.collection = self.client.get_collection(name=collection_name)
-        self.documents_by_paper_id = {document["paper_id"].lower(): document for document in documents}
-        self.documents_by_title = {document["title"].lower(): document for document in documents}
+        self.client = chromadb.PersistentClient(path=str(self.persist_path))
+        self.collection = self.client.get_collection(name=collection_name) if documents is not None else None
+        self.documents_by_paper_id = {document["paper_id"].lower(): document for document in self.documents}
+        self.documents_by_title = {document["title"].lower(): document for document in self.documents}
+
+    def build_from_clean(self) -> "LocalEmbeddingIndex":
+        """Compatibility entrypoint used by the PHA 3 smoke test."""
+        if not self.settings.paths.clean_json.exists():
+            raise FileNotFoundError(self.settings.paths.clean_json)
+        df = pd.read_json(self.settings.paths.clean_json)
+        built = type(self).build(df, self.settings)
+        self.__dict__.update(built.__dict__)
+        return self
+
+    def semantic_search(self, query: str, top_k: int | None = None) -> list[SearchResult]:
+        return self.search(query, top_k=top_k)
 
     @staticmethod
     def _build_documents(df: pd.DataFrame) -> list[dict[str, Any]]:

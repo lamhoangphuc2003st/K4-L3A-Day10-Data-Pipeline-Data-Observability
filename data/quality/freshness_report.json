@@ -1,0 +1,15 @@
+{
+  "run_date": "2026-09-25T09:16:03.584014+00:00",
+  "thresholds": {
+    "stale_after_days": 180,
+    "maximum_stale_rate": 0.25
+  },
+  "total_rows": 24,
+  "stale_rows": 0,
+  "invalid_date_rows": 0,
+  "fresh_rows": 24,
+  "stale_rate": 0.0,
+  "is_fresh": true,
+  "oldest_published": "2026-04-01T00:00:00+00:00",
+  "latest_published": "2026-09-15T00:00:00+00:00"
+}
