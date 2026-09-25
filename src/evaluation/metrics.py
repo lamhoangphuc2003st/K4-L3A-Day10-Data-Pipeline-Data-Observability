@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections import Counter
 from statistics import mean
 import os
+import re
 import sys
 import types
 from typing import Any
@@ -31,21 +33,19 @@ class EvaluationBundle:
 
 
 def _token_f1(reference: str, prediction: str) -> float:
-    ref_tokens = normalize_whitespace(reference).lower().split()
-    pred_tokens = normalize_whitespace(prediction).lower().split()
+    ref_tokens = re.findall(r"\w+", normalize_whitespace(reference).lower())
+    pred_tokens = re.findall(r"\w+", normalize_whitespace(prediction).lower())
     if not ref_tokens or not pred_tokens:
         return 0.0
-    ref_set = set(ref_tokens)
-    pred_set = set(pred_tokens)
-    overlap = len(ref_set & pred_set)
+    overlap = sum((Counter(ref_tokens) & Counter(pred_tokens)).values())
     if overlap == 0:
         return 0.0
-    precision = overlap / len(pred_set)
-    recall = overlap / len(ref_set)
+    precision = overlap / len(pred_tokens)
+    recall = overlap / len(ref_tokens)
     return 2 * precision * recall / (precision + recall)
 
 
-def _judge_answer(settings: Settings, question: str, reference: str, prediction: str) -> JudgeVerdict:
+def _judge_answer(settings: Settings, question: str, reference: str, prediction: str) -> JudgeVerdict | None:
     prompt = f"""
 Evaluate the model answer against the reference answer.
 
@@ -62,12 +62,7 @@ Return:
         llm = build_llm(settings=settings, temperature=0.0).with_structured_output(JudgeVerdict)
         return llm.invoke(prompt)
     except Exception:
-        score = 5 if _token_f1(reference, prediction) >= 0.95 else 3 if _token_f1(reference, prediction) >= 0.5 else 1
-        return JudgeVerdict(
-            score=score,
-            correct=score >= 3,
-            reasoning="Fallback heuristic judge used because the LLM evaluator was unavailable.",
-        )
+        return None
 
 
 def _run_ragas(settings: Settings, answers: list[dict[str, Any]]) -> dict[str, Any]:
@@ -108,6 +103,13 @@ def evaluate_pipeline(
     answers_output_path,
 ) -> EvaluationBundle:
     test_set = read_json(test_set_path)
+    if not isinstance(test_set, list) or not test_set:
+        raise ValueError(f"Invalid or empty test set: {test_set_path}")
+    required = {"id", "question_type", "question", "ground_truth", "ground_truth_doc_ids"}
+    if any(not isinstance(item, dict) or required - set(item)
+           or not isinstance(item["ground_truth_doc_ids"], list)
+           for item in test_set):
+        raise ValueError(f"Test set has invalid questions: {test_set_path}")
     answers: list[dict[str, Any]] = []
 
     for item in test_set:
@@ -126,7 +128,7 @@ def evaluate_pipeline(
                 "retrieved_contexts": result.retrieved_contexts,
                 "retrieval_hit": retrieval_hit,
                 "token_f1": _token_f1(item["ground_truth"], result.answer),
-                "judge": judge.model_dump(),
+                "judge": judge.model_dump() if judge else None,
             }
         )
 
@@ -134,9 +136,15 @@ def evaluate_pipeline(
         "samples": len(answers),
         "retrieval_hit_rate": mean(1.0 if item["retrieval_hit"] else 0.0 for item in answers),
         "mean_token_f1": mean(item["token_f1"] for item in answers),
-        "judge_accuracy": mean(1.0 if item["judge"]["correct"] else 0.0 for item in answers),
-        "mean_judge_score": mean(item["judge"]["score"] for item in answers),
+        "judge_accuracy": None,
+        "mean_judge_score": None,
+        "judge_status": "unavailable",
     }
+    judged = [item["judge"] for item in answers if item["judge"] is not None]
+    if judged:
+        summary["judge_accuracy"] = mean(1.0 if item["correct"] else 0.0 for item in judged)
+        summary["mean_judge_score"] = mean(item["score"] for item in judged)
+        summary["judge_status"] = f"available ({len(judged)}/{len(answers)})"
     summary["ragas"] = _run_ragas(settings, answers)
 
     bundle = EvaluationBundle(summary=summary, answers=answers)

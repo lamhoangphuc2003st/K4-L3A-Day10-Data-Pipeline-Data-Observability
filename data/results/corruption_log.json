@@ -1,0 +1,143 @@
+[
+  {
+    "corruption_type": "drop_latest_records",
+    "count": 5,
+    "affected_records": [
+      {
+        "paper_id": "10.1145/3637528.3671812",
+        "before": "2026-07-22",
+        "after": null
+      },
+      {
+        "paper_id": "10.1145/3637528.3671808",
+        "before": "2026-07-19",
+        "after": null
+      },
+      {
+        "paper_id": "10.1145/3637528.3671804",
+        "before": "2026-07-05",
+        "after": null
+      },
+      {
+        "paper_id": "10.1145/3637528.3671807",
+        "before": "2026-06-25",
+        "after": null
+      },
+      {
+        "paper_id": "10.1145/3637528.3671802",
+        "before": "2026-06-12",
+        "after": null
+      }
+    ]
+  },
+  {
+    "corruption_type": "blank_summary",
+    "count": 2,
+    "affected_records": [
+      {
+        "paper_id": "10.1145/3637528.3671824",
+        "before": "An extended empirical study on tatic benchmarks fail to capture domain drift in enterprise knowledge bases. We establish a synthetic test generator that auto-creates paired evaluation sets whenever new corpora are ingested Further analysis on scaling parameters.",
+        "after": ""
+      },
+      {
+        "paper_id": "10.1145/3637528.3671823",
+        "before": "An extended empirical study on ense vector search excels at conceptual similarity but struggles with exact acronyms and serial numbers. Reciprocal Rank Fusion of sparse lexical scores and dense embeddings achieves optimal recall Further analysis on scaling parameters.",
+        "after": ""
+      }
+    ]
+  },
+  {
+    "corruption_type": "inject_noise",
+    "count": 2,
+    "affected_records": [
+      {
+        "paper_id": "10.1145/3637528.3671822",
+        "before": "An extended empirical study on mbedding quality checks directly into data pipelines enables fail-closed governance. We show how Great Expectations suites catch schema drifts and null fields before documents reach the embedding model Further analysis on scaling parameters.",
+        "after": "@@@ NOISE ### An extended empirical study on mbedding quality checks directly into data pipelines enables fail-closed governance. We show how Great Expectations suites catch schema drifts and null fields before documents reach the embedding model Further analysis on scaling parameters."
+      },
+      {
+        "paper_id": "10.1145/3637528.3671821",
+        "before": "An extended empirical study on ierarchical and semantic boundary chunking preserves code block contexts and markdown headings. Our benchmark demonstrates superior top-1 recall compared to fixed character length sliding windows Further analysis on scaling parameters.",
+        "after": "@@@ NOISE ### An extended empirical study on ierarchical and semantic boundary chunking preserves code block contexts and markdown headings. Our benchmark demonstrates superior top-1 recall compared to fixed character length sliding windows Further analysis on scaling parameters."
+      }
+    ]
+  },
+  {
+    "corruption_type": "truncate_title",
+    "count": 2,
+    "affected_records": [
+      {
+        "paper_id": "10.1145/3637528.3671810",
+        "before": "Automated Data Quality Profiling with Great Expectations in CI/CD",
+        "after": "Automa"
+      },
+      {
+        "paper_id": "10.1145/3637528.3671820",
+        "before": "Advanced Perspectives on Multi-Agent Consensus for High-Stakes Fact Verification",
+        "after": "Advanc"
+      }
+    ]
+  },
+  {
+    "corruption_type": "stale_date",
+    "count": 8,
+    "affected_records": [
+      {
+        "paper_id": "10.1145/3637528.3671824",
+        "before": "2026-06-12",
+        "after": "2025-09-25"
+      },
+      {
+        "paper_id": "10.1145/3637528.3671823",
+        "before": "2026-06-11",
+        "after": "2025-09-25"
+      },
+      {
+        "paper_id": "10.1145/3637528.3671822",
+        "before": "2026-06-10",
+        "after": "2025-09-25"
+      },
+      {
+        "paper_id": "10.1145/3637528.3671821",
+        "before": "2026-06-09",
+        "after": "2025-09-25"
+      },
+      {
+        "paper_id": "10.1145/3637528.3671810",
+        "before": "2026-06-08",
+        "after": "2025-09-25"
+      },
+      {
+        "paper_id": "10.1145/3637528.3671820",
+        "before": "2026-06-08",
+        "after": "2025-09-25"
+      },
+      {
+        "paper_id": "10.1145/3637528.3671819",
+        "before": "2026-06-07",
+        "after": "2025-09-25"
+      },
+      {
+        "paper_id": "10.1145/3637528.3671818",
+        "before": "2026-06-06",
+        "after": "2025-09-25"
+      }
+    ]
+  },
+  {
+    "corruption_type": "duplicate_rows",
+    "count": 2,
+    "affected_records": [
+      {
+        "paper_id": "10.1145/3637528.3671803",
+        "before": 1,
+        "after": 2
+      },
+      {
+        "paper_id": "10.1145/3637528.3671805",
+        "before": 1,
+        "after": 2
+      }
+    ]
+  }
+]

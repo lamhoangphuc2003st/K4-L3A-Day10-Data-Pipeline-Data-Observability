@@ -1,0 +1,158 @@
+{
+  "samples": 10,
+  "retrieval_hit_rate": 0.5,
+  "mean_token_f1": 0.6879832810867293,
+  "judge_accuracy": null,
+  "mean_judge_score": null,
+  "judge_status": "unavailable",
+  "ragas": {
+    "skipped": "Set RUN_RAGAS=1 to enable the slower Ragas pass."
+  },
+  "quality": {
+    "success": false,
+    "checks": [
+      {
+        "expectation": "ExpectTableRowCountToBeBetween",
+        "column": null,
+        "success": true,
+        "result": {
+          "observed_value": 21
+        }
+      },
+      {
+        "expectation": "ExpectColumnValuesToNotBeNull",
+        "column": "paper_id",
+        "success": true,
+        "result": {
+          "element_count": 21,
+          "unexpected_count": 0,
+          "unexpected_percent": 0.0,
+          "partial_unexpected_list": [],
+          "partial_unexpected_counts": [],
+          "partial_unexpected_index_list": []
+        }
+      },
+      {
+        "expectation": "ExpectColumnValuesToNotBeNull",
+        "column": "title",
+        "success": true,
+        "result": {
+          "element_count": 21,
+          "unexpected_count": 0,
+          "unexpected_percent": 0.0,
+          "partial_unexpected_list": [],
+          "partial_unexpected_counts": [],
+          "partial_unexpected_index_list": []
+        }
+      },
+      {
+        "expectation": "ExpectColumnValuesToNotBeNull",
+        "column": "text_for_embedding",
+        "success": true,
+        "result": {
+          "element_count": 21,
+          "unexpected_count": 0,
+          "unexpected_percent": 0.0,
+          "partial_unexpected_list": [],
+          "partial_unexpected_counts": [],
+          "partial_unexpected_index_list": []
+        }
+      },
+      {
+        "expectation": "ExpectColumnValuesToBeUnique",
+        "column": "paper_id",
+        "success": false,
+        "result": {
+          "element_count": 21,
+          "unexpected_count": 4,
+          "unexpected_percent": 19.047619047619047,
+          "partial_unexpected_list": [
+            "10.1145/3637528.3671803",
+            "10.1145/3637528.3671805",
+            "10.1145/3637528.3671803",
+            "10.1145/3637528.3671805"
+          ],
+          "missing_count": 0,
+          "missing_percent": 0.0,
+          "unexpected_percent_total": 19.047619047619047,
+          "unexpected_percent_nonmissing": 19.047619047619047,
+          "partial_unexpected_counts": [
+            {
+              "value": "10.1145/3637528.3671803",
+              "count": 2
+            },
+            {
+              "value": "10.1145/3637528.3671805",
+              "count": 2
+            }
+          ],
+          "partial_unexpected_index_list": [
+            17,
+            18,
+            19,
+            20
+          ]
+        }
+      },
+      {
+        "expectation": "ExpectColumnValueLengthsToBeBetween",
+        "column": "summary",
+        "success": false,
+        "result": {
+          "element_count": 21,
+          "unexpected_count": 2,
+          "unexpected_percent": 9.523809523809524,
+          "partial_unexpected_list": [
+            "",
+            ""
+          ],
+          "missing_count": 0,
+          "missing_percent": 0.0,
+          "unexpected_percent_total": 9.523809523809524,
+          "unexpected_percent_nonmissing": 9.523809523809524,
+          "partial_unexpected_counts": [
+            {
+              "value": "",
+              "count": 2
+            }
+          ],
+          "partial_unexpected_index_list": [
+            0,
+            1
+          ]
+        }
+      },
+      {
+        "expectation": "NoNoiseRuns",
+        "success": false
+      },
+      {
+        "expectation": "TitleLengthAtLeast8",
+        "success": false
+      },
+      {
+        "expectation": "RawSourceCoverage",
+        "success": false,
+        "missing_paper_ids": [
+          "10.1145/3637528.3671802",
+          "10.1145/3637528.3671804",
+          "10.1145/3637528.3671807",
+          "10.1145/3637528.3671808",
+          "10.1145/3637528.3671812"
+        ]
+      }
+    ]
+  },
+  "freshness": {
+    "latest_published": "2026-06-05",
+    "oldest_published": "2025-09-25",
+    "stale_rows": 10,
+    "total_rows": 21,
+    "stale_fraction": 0.47619047619047616,
+    "threshold_days": 180,
+    "max_stale_fraction": 0.25,
+    "is_fresh": false
+  },
+  "duplicates": 2,
+  "missing_ids": 5
+}
