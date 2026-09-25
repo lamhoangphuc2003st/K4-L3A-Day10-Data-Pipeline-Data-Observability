@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections import defaultdict, deque
 from statistics import mean
 import os
 import sys
@@ -100,6 +101,31 @@ def _run_ragas(settings: Settings, answers: list[dict[str, Any]]) -> dict[str, A
         return {"error": f"Ragas evaluation failed: {exc}"}
 
 
+def _select_evaluation_samples(test_set: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Select a reproducible round-robin subset across question types."""
+    try:
+        limit = int(os.getenv("EVAL_MAX_SAMPLES", "0"))
+    except ValueError as exc:
+        raise ValueError("EVAL_MAX_SAMPLES must be a non-negative integer (0 = all).") from exc
+    if limit < 0:
+        raise ValueError("EVAL_MAX_SAMPLES must be a non-negative integer (0 = all).")
+    if not test_set:
+        raise ValueError("The evaluation test set is empty.")
+    if limit == 0 or limit >= len(test_set):
+        return test_set
+    groups = defaultdict(deque)
+    for item in test_set:
+        groups[item.get("type", item.get("question_type", "unknown"))].append(item)
+    selected = []
+    while len(selected) < limit:
+        for group in groups.values():
+            if group:
+                selected.append(group.popleft())
+            if len(selected) == limit:
+                break
+    return selected
+
+
 def evaluate_pipeline(
     settings: Settings,
     index: LocalEmbeddingIndex,
@@ -107,13 +133,16 @@ def evaluate_pipeline(
     metrics_output_path,
     answers_output_path,
 ) -> EvaluationBundle:
-    test_set = read_json(test_set_path)
+    full_test_set = read_json(test_set_path)
+    test_set = _select_evaluation_samples(full_test_set)
+    print(f"Evaluation: {len(test_set)}/{len(full_test_set)} benchmark questions selected.", flush=True)
     answers: list[dict[str, Any]] = []
 
-    for item in test_set:
+    for position, item in enumerate(test_set, start=1):
+        print(f"[eval {position}/{len(test_set)}] Starting {item['id']}...", flush=True)
         result = answer_question(item["question"], settings=settings, index=index)
         judge = _judge_answer(settings, item["question"], item["ground_truth"], result.answer)
-        retrieval_hit = any(doc_id in item["ground_truth_doc_ids"] for doc_id in result.retrieved_doc_ids)
+        retrieval_hit = bool(item["ground_truth_doc_ids"]) and set(item["ground_truth_doc_ids"]).issubset(result.retrieved_doc_ids)
         answers.append(
             {
                 "id": item["id"],
@@ -129,9 +158,12 @@ def evaluate_pipeline(
                 "judge": judge.model_dump(),
             }
         )
+        print(f"[eval {position}/{len(test_set)}] Completed.", flush=True)
 
     summary = {
         "samples": len(answers),
+        "total_test_samples": len(full_test_set),
+        "heuristic_judgments": sum(item["judge"]["reasoning"].startswith("Fallback heuristic judge") for item in answers),
         "retrieval_hit_rate": mean(1.0 if item["retrieval_hit"] else 0.0 for item in answers),
         "mean_token_f1": mean(item["token_f1"] for item in answers),
         "judge_accuracy": mean(1.0 if item["judge"]["correct"] else 0.0 for item in answers),
