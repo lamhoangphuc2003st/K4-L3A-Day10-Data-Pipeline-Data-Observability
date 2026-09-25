@@ -41,13 +41,11 @@ K4-L3-DAY10-TenNhom-DataPipeline/
 │   │   └── papers_clean.json
 │   ├── chroma/                              <- Vector Database ChromaDB (chứa 3 collections tách biệt)
 │   ├── eval/
-│   │   └── test_set.json                    <- Benchmark PHA 3 cố định, 5 câu / 5 loại
+│   │   └── test_set.json                    <- Bộ 10 câu hỏi benchmark cố định
 │   ├── quality/
 │   │   ├── baseline_quality_report.json     <- Báo cáo GX 1.x cho dữ liệu sạch (Pass)
 │   │   ├── corrupted_quality_report.json    <- Báo cáo GX 1.x khi bị tiêm lỗi (Fail)
-│   │   ├── repaired_quality_report.json      <- Báo cáo GX 1.x sau phục hồi (Pass)
-│   │   ├── freshness_report.json            <- Báo cáo độ tươi baseline
-│   │   └── *_freshness_report.json           <- Freshness của corrupted và repaired
+│   │   └── freshness_report.json            <- Báo cáo độ tươi Freshness SLA
 │   ├── results/
 │   │   ├── baseline_metrics.json            <- Hit rate & F1 của Baseline
 │   │   ├── corruption_log.json              <- Nhật ký chi tiết 6 dạng lỗi đã tiêm
@@ -66,7 +64,6 @@ K4-L3-DAY10-TenNhom-DataPipeline/
 ├── docs/                                    <- Thư mục tài liệu hướng dẫn và quy chuẩn
 │   ├── Guide.md                             <- Hướng dẫn kỹ thuật chi tiết
 │   ├── CHECKPOINTS.md                       <- Lộ trình 7 checkpoints và cách tự kiểm tra
-│   ├── DATA_CONTRACT.md                     <- Schema và benchmark contract
 │   ├── RUBRIC.md                            <- Tiêu chí chấm điểm
 │   ├── RULES.md                             <- Quy định học vụ và liêm chính học thuật
 │   ├── SUBMISSION.md                        <- Hướng dẫn nộp bài
@@ -82,8 +79,6 @@ K4-L3-DAY10-TenNhom-DataPipeline/
   - `python script/run_phase1.py` (Exit code 0)
   - `python script/run_corruption_flow.py` (Exit code 0)
 - [ ] **Báo cáo đối chiếu 3 trạng thái:** Tồn tại `data/reports/corruption_report.md` có đầy đủ bảng so sánh Baseline vs Corrupted vs Repaired.
-- [ ] **Benchmark PHA 3:** `data/eval/test_set.json` có 5 câu với đủ loại `summary`, `authors`, `date`, `category`, `multi_hop`.
-- [ ] **Vector retrieval minh bạch:** Báo cáo có cả Hit Rate vector và hybrid (tra cứu tiêu đề + vector); nguồn điểm LLM Judge ghi rõ nếu có fallback.
 - [ ] **Chứng minh được độ suy giảm và phục hồi:** Có bằng chứng số liệu trong `baseline_metrics.json`, `corrupted_metrics.json`, `repaired_metrics.json`.
 - [ ] **Khai báo `TEAM.md`:** Đã điền đầy đủ họ tên, MSSV và phần tự khai cá nhân của từng thành viên.
 - [ ] **Bảo mật:** Không commit file `.env` chứa API Key lên GitHub.

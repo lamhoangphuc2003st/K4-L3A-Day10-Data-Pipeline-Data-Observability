@@ -1,23 +1,24 @@
-# Data corruption and repair comparison
+# Corruption Report - Baseline vs Corrupted vs Repaired
 
-The corrupted collection is isolated. Its failing quality gate prevents promotion to the baseline collection.
-Repair rebuilds from raw records and replaces only the repaired collection.
+## Metrics
 
-| Measure | Baseline | Corrupted | Repaired |
-| --- | ---: | ---: | ---: |
-| Questions | 5 | 5 | 5 |
-| Hybrid retrieval Hit Rate | 100.0% | 80.0% | 100.0% |
-| Pure vector Hit Rate | 100.0% | 80.0% | 100.0% |
-| Mean Token F1 | 100.0% | 40.0% | 100.0% |
-| Judge accuracy | 100.0% | 60.0% | 100.0% |
-| Mean judge score | 5 | 3.2 | 5 |
-| GX quality gate | PASS | FAIL | PASS |
-| Freshness SLA | PASS | ALERT | PASS |
-| Stale rows | 0 | 13 | 0 |
+| Metric | Baseline | Corrupted | Repaired |
+| :--- | ---: | ---: | ---: |
+| Retrieval Hit Rate | 1.0000 | 0.7000 | 1.0000 |
+| Mean Token F1 | 1.0000 | 0.8000 | 1.0000 |
+| Judge Accuracy | 1.0000 | 0.8000 | 1.0000 |
+| Mean Judge Score | 5.0000 | 4.2000 | 5.0000 |
 
-## Interpretation
+## Observability
 
-Hit Rate is reported separately for hybrid title-assisted retrieval and pure vector retrieval.
-The two-paper multi-hop question requires both source documents to count as a retrieval hit.
-Judge methods — baseline: {'llm': 5}; corrupted: {'llm': 5}; repaired: {'llm': 5}.
-A heuristic fallback is recorded as such and must not be described as an LLM judgment.
+| Signal | Corrupted | Repaired |
+| :--- | :--- | :--- |
+| GX quality gate success | False | True |
+| Failed checks | paper_id_unique, summary_length_min_30 | none |
+| Freshness is_fresh | True | True |
+| Stale rows | 4/22 | 1/24 |
+| Latest published | 2026-06-12 | 2026-07-22 |
+
+## Conclusion
+
+Corrupted data trips the quality gate / freshness SLA while the agent keeps answering (silent failure). Re-running the repair from the raw snapshot is idempotent and restores the baseline metrics.

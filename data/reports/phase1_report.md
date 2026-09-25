@@ -1,25 +1,41 @@
-# Phase 1 — Baseline data pipeline
+# Phase 1 Report - Baseline Pipeline
 
-Source: Crossref offline snapshot
-Raw records: 24
-Clean records: 24
+## Source
 
-## Quality and freshness
+- source_api: Crossref REST API
+- query: agentic retrieval augmented generation large language model
+- records_ingested: 24
+- clean_rows: 24
+- embedding_model: sentence-transformers/all-MiniLM-L6-v2
+- collection: papers-baseline
 
-GX quality gate: **PASS**
-Freshness SLA: **PASS**
-Stale rows: 0/24 (0.0%)
-
-## Evaluation
+## Retrieval & Answer Metrics
 
 | Metric | Value |
-| --- | ---: |
-| Questions | 5 |
-| Hybrid retrieval Hit Rate | 100.0% |
-| Pure vector retrieval Hit Rate | 100.0% |
-| Mean Token F1 | 100.0% |
-| Judge accuracy | 100.0% |
-| Mean judge score (1–5) | 5.00 |
+| :--- | ---: |
+| Retrieval Hit Rate | 1.0000 |
+| Mean Token F1 | 1.0000 |
+| Judge Accuracy | 1.0000 |
+| Mean Judge Score | 5.0000 |
+| Samples | 10 |
 
-Hybrid retrieval uses exact title lookup plus vectors; pure vector retrieval uses Chroma alone.
-Judge methods: {'llm': 5}. Heuristic fallback scores are not LLM judgments.
+## Data Quality (Great Expectations 1.x)
+
+- Gate success: **True**
+- Failed checks: none
+
+| Check | Passed |
+| :--- | :---: |
+| row_count_between_5_and_5000 | True |
+| paper_id_not_null | True |
+| title_not_null | True |
+| text_for_embedding_not_null | True |
+| paper_id_unique | True |
+| summary_length_min_30 | True |
+
+## Freshness
+
+- Latest published: 2026-07-22
+- Oldest published: 2026-03-28
+- Stale rows (> 180 days): 1/24
+- is_fresh: **True**

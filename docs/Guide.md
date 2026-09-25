@@ -31,13 +31,7 @@ Trước khi bắt tay vào làm việc, chúng ta cần chuẩn bị một "că
 5. Tạo file cấu hình `.env` từ file mẫu `.env.example`:
    - Trên Windows PowerShell: `Copy-Item .env.example .env`
    - Trên Linux/macOS: `cp .env.example .env`
-   Mặc định có thể chạy judge qua Ollama cục bộ mà không cần cloud key. Đảm bảo model có sẵn (`ollama pull llama3.1`) và đặt trong `.env`:
-   ```dotenv
-   LLM_PROVIDER=ollama
-   LLM_MODEL=llama3.1
-   OLLAMA_BASE_URL=http://localhost:11434
-   ```
-   Nếu dùng provider cloud thì điền API key tương ứng thay vì cấu hình Ollama.
+   Mở file `.env`, tìm dòng `GOOGLE_API_KEY=` và dán mã API Key của bạn ngay sau dấu `=`. Không để khoảng trắng thừa, không cần thêm dấu nháy kép. Máy tính thích sự gọn gàng!
 6. Kiểm tra kết nối 3 "vũ khí cốt lõi" (ChromaDB để lưu vector, Great Expectations để kiểm dịch dữ liệu, Sentence-Transformers để tạo embedding):
    ```bash
    python -c "import chromadb, great_expectations, sentence_transformers; print('Môi trường sẵn sàng')"
@@ -134,18 +128,16 @@ python -c "from core.config import load_settings; from observability.quality imp
 
 ## Bước 5: Tạo Bộ Đề Thi Chuẩn (Benchmark Test Set) (`src/evaluation/testset.py`)
 
-Benchmark theo PHA 3 có đúng 5 câu hỏi cố định, mỗi câu thuộc một loại:
-1. `summary`: Hỏi tóm tắt nội dung chính của một bài báo.
-2. `authors`: Hỏi tác giả.
-3. `date`: Hỏi ngày xuất bản.
-4. `category`: Hỏi lĩnh vực chuyên môn.
-5. `multi_hop`: Tìm lĩnh vực chung giữa hai bài báo; câu trả lời cần cả hai DOI liên quan.
+Để biết AI trả lời đúng hay sai, chúng ta cần một "đề thi chuẩn có sẵn đáp án" (Ground Truth) gồm 10 câu hỏi đa dạng, chia đều vào 4 dạng bài toán:
+1. `summary`: Hỏi tóm tắt nội dung chính của một bài báo cụ thể.
+2. `authors`: Hỏi ai là tác giả của công trình nghiên cứu.
+3. `date`: Hỏi thời điểm bài báo được xuất bản.
+4. `categories`: Hỏi về chuyên ngành / lĩnh vực phân loại.
 
 Mỗi câu hỏi mẫu trong file `test_set.json` có cấu trúc rõ ràng:
 ```json
 {
   "id": "eval_001",
-  "type": "summary",
   "question_type": "summary",
   "question": "What is the summary of the paper '<Title>'?",
   "ground_truth": "<Nội dung câu đầu tóm tắt chuẩn>",
@@ -155,15 +147,9 @@ Mỗi câu hỏi mẫu trong file `test_set.json` có cấu trúc rõ ràng:
 
 Kiểm tra bước 5:
 ```bash
-python -c "from core.config import load_settings; from evaluation.testset import load_or_create_test_set; import pandas as pd; s=load_settings(); df=pd.read_json(s.paths.clean_json); ts=load_or_create_test_set(df, s.paths.test_set_json); print(f'Tín hiệu hoàn thành: Test set gồm {len(ts.samples)} câu hỏi')"
+python -c "from core.config import load_settings; from evaluation.testset import build_test_set; import pandas as pd; s=load_settings(); df=pd.read_json(s.paths.clean_json); ts=build_test_set(df, s.paths.eval_testset); print(f'Tín hiệu hoàn thành: Sinh được {len(ts)} câu hỏi test')"
 ```
-> **Tín hiệu hoàn thành:** Console in ra `Tín hiệu hoàn thành: Test set gồm 5 câu hỏi` và đủ năm loại trên.
-
-Kiểm tra vector index theo PHA 3:
-```bash
-python -c "from core.config import load_settings; from retrieval.index import LocalEmbeddingIndex; s=load_settings(); idx=LocalEmbeddingIndex(s, collection_name='papers-baseline'); idx.build_from_clean(); res=idx.semantic_search('machine learning', top_k=2); print(f'Tín hiệu hoàn thành: Tìm thấy {len(res)} tài liệu liên quan')"
-```
-> **Tín hiệu hoàn thành:** Tìm thấy 2 tài liệu liên quan. Lần chạy đầu tải model embedding nếu máy chưa có cache.
+> **Tín hiệu hoàn thành:** Console in ra `Tín hiệu hoàn thành: Sinh được 10 câu hỏi test`.
 
 ---
 
@@ -186,18 +172,18 @@ python script/run_phase1.py
 ## Bước 7: Thử Thách "Tiêm Độc Tố Dữ Liệu" (Data Corruption Suite)
 
 Trong thực tế, hệ thống dữ liệu luôn phải đối mặt với vô vàn sự cố ngoài ý muốn. Tại bước này, chúng ta sẽ đóng vai "kẻ thử thách có chủ đích" trong `src/ingestion/corruption.py` để tiêm 6 dạng lỗi thường gặp nhất:
-1. **Drop latest records:** Bỏ 20% bài mới nhất khỏi tập corruption.
-2. **Blank summary:** Xóa trắng summary ở một số dòng.
-3. **Inject text noise:** Chèn chuỗi rác vào `text_for_embedding`.
-4. **Truncate title:** Cắt title còn 9 ký tự.
-5. **Stale date:** Lùi ngày xuất bản của nhiều dòng về 5 năm trước để vượt Freshness SLA.
-6. **Duplicate rows:** Nhân bản số dòng tương ứng với phần đã bỏ để giữ tổng số dòng ở 24, đồng thời tạo DOI trùng.
+1. **Drop latest records:** Bỏ rơi 20% các bài báo mới nhất (mô phỏng sự cố mất dữ liệu tươi).
+2. **Blank summary:** Xóa trắng phần tóm tắt ở một số dòng (mô phỏng lỗi cào dữ liệu rỗng).
+3. **Inject noise:** Chèn các chuỗi ký tự rác vô nghĩa vào tóm tắt (mô phỏng nhiễu ký tự).
+4. **Truncate title:** Cắt ngắn tiêu đề bài báo xuống dưới 8 ký tự.
+5. **Stale date:** Lùi ngày xuất bản về 365 ngày trước (mô phỏng dữ liệu bị mốc meo).
+6. **Duplicate rows:** Nhân đôi các dòng để tạo dữ liệu trùng lặp.
 
 Kiểm tra bước 7:
 ```bash
 python -c "from core.config import load_settings; from ingestion.corruption import corrupt_clean_dataframe; import pandas as pd; s=load_settings(); df=pd.read_json(s.paths.clean_json); c=corrupt_clean_dataframe(df, s.paths.corruption_log); print(f'Tín hiệu hoàn thành: Corrupted {len(c)} dòng')"
 ```
-> **Tín hiệu hoàn thành:** Console in `Corrupted 24 dòng`; `data/results/corruption_log.json` có đủ sáu loại lỗi và ID bản ghi chịu ảnh hưởng.
+> **Tín hiệu hoàn thành:** File nhật ký lỗi `data/results/corruption_log.json` được ghi lại chi tiết.
 
 ---
 
@@ -214,4 +200,4 @@ python script/run_corruption_flow.py
 
 > **Tín hiệu hoàn thành:**
 > - Console in ra bảng so sánh hiệu năng 3 cột rõ ràng.
-> - Báo cáo `data/reports/corruption_report.md` so sánh số đo thực tế của baseline, corrupted và repaired. Không đảm bảo trước một mức điểm cố định.
+> - Báo cáo `data/reports/corruption_report.md` được tạo thành công, minh chứng rõ ràng: Dữ liệu bẩn làm AI nói dối, và sau khi phục hồi đúng cách, AI lấy lại 100% phong độ ban đầu!

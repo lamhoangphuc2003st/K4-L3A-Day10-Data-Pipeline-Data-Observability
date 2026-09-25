@@ -1,128 +1,60 @@
 {
-  "source_rows": 24,
-  "corrupted_rows": 24,
-  "scenarios": [
+  "seed": 42,
+  "rows_before": 24,
+  "rows_after": 22,
+  "corruptions": [
     {
       "type": "drop_latest_records",
-      "record_ids": [
-        "10.21203/rs.3.rs-10489777/v1",
-        "10.70267/aitia.2026482489",
-        "10.21203/rs.3.rs-10349437/v1",
-        "10.54254/2755-2721/2026.36624",
-        "10.36887/2415-8453-2026-3-2"
-      ],
-      "count": 5
+      "count": 5,
+      "paper_ids": [
+        "10.1145/3637528.3671812",
+        "10.1145/3637528.3671808",
+        "10.1145/3637528.3671804",
+        "10.1145/3637528.3671807",
+        "10.1145/3637528.3671802"
+      ]
     },
     {
       "type": "blank_summary",
-      "record_ids": [
-        "10.1007/s10278-026-02086-9",
-        "10.1093/sleep/zsag091.0346"
-      ],
       "count": 2,
-      "changes": [
-        {
-          "paper_id": "10.1007/s10278-026-02086-9",
-          "before": "Abstract Diagnosing jawbone lesions in oral and maxillofacial radiology remains challenging due to overlapping radiological features and the need for integrated clinical reasoning. This study aimed to develop and validate JADE-Plus, a novel multimodal, agent-controlled retrieval-augmented generation (RAG) framework for diagnostic decision support in jawbone lesion assessment. JADE-Plus was implemented as a cloud-based, tablet-optimized system integrating a vision-language model (VLM) for panoramic radiograph analysis, a knowledge-grounded RAG module, and an agentic verification loop for diagnostic fusion and re-ranking. The system was evaluated using 40 representative jawbone lesion cases and compared with JADE, GPT-5.4, GPT-5.4 VLM, and ORAD. Performance was assessed using Top-1 and Top-3 accuracy, ablation and statistical analyses, intra-model stability, and response time. JADE-Plus achieved the highest diagnostic performance, with a Top-1 accuracy of 90% (36/40; 95% CI 76\u201397%) and a Top-3 accuracy of 100%, with no missed diagnoses. Cochran\u2019s Q test demonstrated significant differences among models for both Top-3 correctness ( Q = 25.66, p < 0.001) and Top-1 correctness ( Q = 27.55, p < 0.001). Post-hoc McNemar tests with the Benjamini\u2013Hochberg correction showed that JADE-Plus significantly outperformed other models, particularly under the stricter Top-1 evaluation. Ablation analysis showed that the agentic verification stage improved Top-1 and Top-3 accuracy by 15 and 8 percentage points, respectively. JADE-Plus achieved the highest reproducibility (mean Jaccard similarity 0.97 \u00b1 0.12) while maintaining a mean response time of 33 \u00b1 1.5 s per case. JADE-Plus demonstrated superior diagnostic accuracy, stability, and reproducibility compared with baseline systems, supporting multimodal agentic RAG frameworks for jawbone lesion diagnosis.",
-          "after": ""
-        },
-        {
-          "paper_id": "10.1093/sleep/zsag091.0346",
-          "before": "Abstract Introduction While Large Language Models (LLMs) offer generative capabilities, generic models often lack domain-specific grounding, leading to hallucinations in high-stakes contexts. However, LLMs can serve as clinical decision support tools if augmented with specific domain data. This study evaluates the utility of Retrieval-Augmented Generation (RAG) applied to open-source LLMs, utilizing a curated knowledge base of authoritative sleep medicine textbooks, to quantify improvement in performance. Methods We evaluated four open-source models\u2014Llama-70B, Llama-8B, Qwen-14B, and Qwen-235B, linked to a RAG system indexing five standard textbooks, including ICSD-3 TR. Models were tested on sleep board\u2013style MCQs and clinical vignettes diagnostic accuracy. Performance was assessed across nine configurations derived from three factors: RAG pipeline complexity (Plain vs. Complicated), textbook preprocessing (Uncleaned vs. Cleaned/TOC-aligned), and retriever type (Dense-only vs. Hybrid). Metrics included MCQ Accuracy and the rates at which the correct diagnosis appeared as the top result or within the top 5 differential diagnosis lists for vignettes. Results RAG consistently outperformed the no-RAG baseline, yielding absolute performance gains of 5.6%\u201310.7% for MCQs and 8.1%\u201310.2% for the top diagnosis in cases across all models. For MCQs, Qwen-235B achieved the highest accuracy of 87.3% (vs. 81.7% baseline) using the Plain RAG configuration with Cleaned (TOC-aligned) Hybrid retrieval. Llama-70B followed with 83.6% in the same configuration. For case vignettes, Qwen-235B achieved a correct top diagnosis rate of 66.3% and a correct diagnosis rate within the top 5 differential diagnosis lists of 90.8% using Cleaned Hybrid retrieval configurations. Hybrid retrieval (Dense + Sparse) consistently surpassed Dense-only methods. Notably, while larger models benefited from Cleaned text, smaller models (e.g., Qwen-14B) achieved higher top diagnosis rates with Uncleaned text (57.1% vs. 51.0%), suggesting a dependency on redundant context in lower-parameter settings. Conclusion RAG significantly enhances knowledge performance of open-source LLMs in sleep medicine. Hybrid retrieval and curated, TOC-aligned knowledge bases yield optimal results for large models, whereas smaller models benefit from the redundancy of uncleaned text. These findings suggest that RAG systems can augment LLMs in domain specific knowledge for clinical decision support. Support (if any)",
-          "after": ""
-        }
+      "paper_ids": [
+        "10.1145/3637528.3671824",
+        "10.1145/3637528.3671820"
+      ]
+    },
+    {
+      "type": "inject_noise",
+      "count": 2,
+      "paper_ids": [
+        "10.1145/3637528.3671814",
+        "10.1145/3637528.3671823"
       ]
     },
     {
       "type": "truncate_title",
-      "record_ids": [
-        "10.20944/preprints202608.1849.v1"
-      ],
-      "before": "An Agentic Retrieval-Augmented Vision-Language Recommendation System for Hyperdimensional Encoding Optimization",
-      "after": "An Agenti",
-      "max_length": 9
-    },
-    {
-      "type": "stale_date",
-      "record_ids": [
-        "10.1007/s10278-026-02086-9",
-        "10.1093/sleep/zsag091.0346",
-        "10.20944/preprints202604.0339.v1",
-        "10.20944/preprints202608.1849.v1",
-        "10.21079/11681/50309",
-        "10.2118/234689-pa",
-        "10.21203/rs.3.rs-10012178/v1",
-        "10.21203/rs.3.rs-10178277/v1"
-      ],
-      "years_backdated": 5,
-      "changes": [
-        {
-          "paper_id": "10.1007/s10278-026-02086-9",
-          "before": "2026-07-13",
-          "after": "2021-07-13"
-        },
-        {
-          "paper_id": "10.1093/sleep/zsag091.0346",
-          "before": "2026-05-01",
-          "after": "2021-05-01"
-        },
-        {
-          "paper_id": "10.20944/preprints202604.0339.v1",
-          "before": "2026-04-06",
-          "after": "2021-04-06"
-        },
-        {
-          "paper_id": "10.20944/preprints202608.1849.v1",
-          "before": "2026-08-26",
-          "after": "2021-08-26"
-        },
-        {
-          "paper_id": "10.21079/11681/50309",
-          "before": "2026-07-01",
-          "after": "2021-07-01"
-        },
-        {
-          "paper_id": "10.2118/234689-pa",
-          "before": "2026-08-01",
-          "after": "2021-08-01"
-        },
-        {
-          "paper_id": "10.21203/rs.3.rs-10012178/v1",
-          "before": "2026-06-15",
-          "after": "2021-06-15"
-        },
-        {
-          "paper_id": "10.21203/rs.3.rs-10178277/v1",
-          "before": "2026-07-10",
-          "after": "2021-07-10"
-        }
+      "count": 2,
+      "paper_ids": [
+        "10.1145/3637528.3671817",
+        "10.1145/3637528.3671809"
       ]
     },
     {
-      "type": "inject_text_noise",
-      "field": "text_for_embedding",
-      "record_ids": [
-        "10.20944/preprints202604.0339.v1"
-      ],
-      "changes": [
-        {
-          "paper_id": "10.20944/preprints202604.0339.v1",
-          "before": "Title: Retrieval-Augmented Large Language Model Agents for Automated Scientific Literature Review Generation\nAuthors: Ruotong Wang, Nyutian Long, Shunqi Liu, Yuxi Wang, Zhen Qi, Huajun Zhang\nPublished: 2021-04-06\nCategories: \nSummary: This study investigates a method that integrates retrieval-augmented mechanisms into large language model agents for scientific literature review generation. The approach addresses the limitations of traditional review models that rely on parametric knowledge with insufficient timeliness and limited coverage. Incorporating external document retrieval and dynamic information fusion into the generation process enhances the accuracy and completeness of the output. The overall framework consists of query encoding, semantic retrieval, document filtering, knowledge fusion, language modeling, task planning, memory storage, and reinforcement optimization, forming a closed loop of retrieval, understanding, and generation. Relevant document fragments are first retrieved through semantic vector search to ensure comprehensive and reliable information sources. These external representations are then integrated with the internal embeddings of the language model through weighted fusion, which preserves fluency while maintaining factual grounding. The task planning module constrains logical flow and text structure, and reinforcement learning optimization further improves relevance and consistency. Comparative experiments on large-scale scientific literature datasets demonstrate that the method outperforms existing approaches on ROUGE, BLEU, METEOR, and diversity metrics, validating its effectiveness and practicality. The findings show that combining retrieval augmentation with agent architectures can significantly improve coverage, accuracy, and language quality in review generation, providing a feasible solution for knowledge organization in complex literature environments.",
-          "after": "Title: Retrieval-Augmented Large Language Model Agents for Automated Scientific Literature Review Generation\nAuthors: Ruotong Wang, Nyutian Long, Shunqi Liu, Yuxi Wang, Zhen Qi, Huajun Zhang\nPublished: 2021-04-06\nCategories: \nSummary: This study investigates a method that integrates retrieval-augmented mechanisms into large language model agents for scientific literature review generation. The approach addresses the limitations of traditional review models that rely on parametric knowledge with insufficient timeliness and limited coverage. Incorporating external document retrieval and dynamic information fusion into the generation process enhances the accuracy and completeness of the output. The overall framework consists of query encoding, semantic retrieval, document filtering, knowledge fusion, language modeling, task planning, memory storage, and reinforcement optimization, forming a closed loop of retrieval, understanding, and generation. Relevant document fragments are first retrieved through semantic vector search to ensure comprehensive and reliable information sources. These external representations are then integrated with the internal embeddings of the language model through weighted fusion, which preserves fluency while maintaining factual grounding. The task planning module constrains logical flow and text structure, and reinforcement learning optimization further improves relevance and consistency. Comparative experiments on large-scale scientific literature datasets demonstrate that the method outperforms existing approaches on ROUGE, BLEU, METEOR, and diversity metrics, validating its effectiveness and practicality. The findings show that combining retrieval augmentation with agent architectures can significantly improve coverage, accuracy, and language quality in review generation, providing a feasible solution for knowledge organization in complex literature environments.\nXQZXQZ !!! 0000 ### [CORRUPTED]"
-        }
+      "type": "stale_date",
+      "count": 3,
+      "paper_ids": [
+        "10.1145/3637528.3671821",
+        "10.1145/3637528.3671801",
+        "10.1145/3637528.3671806"
       ]
     },
     {
       "type": "duplicate_rows",
-      "record_ids": [
-        "10.1007/s10278-026-02086-9",
-        "10.1093/sleep/zsag091.0346",
-        "10.20944/preprints202604.0339.v1",
-        "10.20944/preprints202608.1849.v1",
-        "10.21079/11681/50309"
-      ],
-      "count": 5,
-      "restores_dropped_row_count": true
+      "count": 3,
+      "paper_ids": [
+        "10.1145/3637528.3671803",
+        "10.1145/3637528.3671822",
+        "10.1145/3637528.3671816"
+      ]
     }
   ]
 }

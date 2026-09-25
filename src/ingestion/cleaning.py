@@ -1,53 +1,67 @@
 from __future__ import annotations
 
 from datetime import datetime
-from html import unescape
-import re
 
 import pandas as pd
 
-from core.utils import normalize_whitespace
+from core.utils import compact_join, normalize_whitespace
 from ingestion.crossref import PaperRecord
 
+MIN_SUMMARY_CHARS = 30
 
-def _clean(value: object) -> str:
-    return normalize_whitespace(unescape(re.sub(r"<[^>]*>", " ", str(value or ""))))
+
+def build_text_for_embedding(row: pd.Series | dict) -> str:
+    return (
+        f"Title: {row['title']}\n"
+        f"Authors: {row['authors_joined']}\n"
+        f"Published: {row['published']}\n"
+        f"Categories: {row['categories_joined']}\n"
+        f"Summary: {row['summary']}"
+    )
 
 
 def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.DataFrame:
-    columns = ["paper_id", "title", "summary", "authors", "categories", "primary_category",
-               "published", "updated", "abs_url", "pdf_url", "comment", "age_days",
-               "authors_joined", "categories_joined", "summary_chars", "text_for_embedding"]
     rows = []
-    today = run_date.date()
-    seen = set()
     for record in records:
-        paper_id = _clean(record.paper_id).lower()
-        title, summary = _clean(record.title), _clean(record.summary)
-        published = pd.to_datetime(record.published, errors="coerce", utc=True)
-        if not paper_id or paper_id in seen or not title or not summary or pd.isna(published):
+        authors = [normalize_whitespace(a) for a in record.authors if a]
+        categories = [normalize_whitespace(c) for c in record.categories if c]
+        published = pd.to_datetime(record.published, errors="coerce")
+        updated = pd.to_datetime(record.updated, errors="coerce")
+        if pd.isna(published):
             continue
-        seen.add(paper_id)
-        authors = [_clean(author) for author in record.authors if _clean(author)]
-        categories = [_clean(category) for category in record.categories if _clean(category)]
-        published_iso = published.date().isoformat()
-        authors_joined = ", ".join(authors)
-        categories_joined = ", ".join(categories)
-        updated = pd.to_datetime(record.updated, errors="coerce", utc=True)
-        updated_iso = updated.date().isoformat() if not pd.isna(updated) else published_iso
-        rows.append({
-            "paper_id": paper_id, "title": title, "summary": summary,
-            "authors": authors, "categories": categories,
-            "primary_category": _clean(record.primary_category),
-            "published": published_iso, "updated": updated_iso,
-            "abs_url": _clean(record.abs_url), "pdf_url": _clean(record.pdf_url),
-            "comment": _clean(record.comment),
-            "age_days": (today - published.date()).days,
-            "authors_joined": authors_joined, "categories_joined": categories_joined,
-            "summary_chars": len(summary),
-            "text_for_embedding": "\n".join([
-                f"Title: {title}", f"Authors: {authors_joined}", f"Published: {published_iso}",
-                f"Categories: {categories_joined}", f"Summary: {summary}",
-            ]),
-        })
-    return pd.DataFrame(rows, columns=columns).sort_values("paper_id").reset_index(drop=True)
+        rows.append(
+            {
+                "paper_id": normalize_whitespace(record.paper_id),
+                "title": normalize_whitespace(record.title),
+                "summary": normalize_whitespace(record.summary),
+                "authors": authors,
+                "categories": categories,
+                "primary_category": normalize_whitespace(record.primary_category),
+                "published": published.date().isoformat(),
+                "updated": (updated if not pd.isna(updated) else published).date().isoformat(),
+                "abs_url": record.abs_url,
+                "pdf_url": record.pdf_url,
+                "comment": record.comment,
+            }
+        )
+
+    columns = [
+        "paper_id", "title", "summary", "authors", "categories", "primary_category",
+        "published", "updated", "abs_url", "pdf_url", "comment",
+    ]
+    df = pd.DataFrame(rows, columns=columns)
+    if df.empty:
+        return df.assign(
+            age_days=[], authors_joined=[], categories_joined=[], summary_chars=[], text_for_embedding=[]
+        )
+
+    run_day = pd.Timestamp(run_date.date())
+    df["age_days"] = (run_day - pd.to_datetime(df["published"])).dt.days.astype(int)
+    df["authors_joined"] = df["authors"].apply(compact_join)
+    df["categories_joined"] = df["categories"].apply(compact_join)
+    df["summary_chars"] = df["summary"].str.len()
+    df["text_for_embedding"] = df.apply(build_text_for_embedding, axis=1)
+
+    df = df[(df["title"] != "") & (df["summary_chars"] >= MIN_SUMMARY_CHARS)]
+    df = df.drop_duplicates(subset="paper_id", keep="first")
+    return df.sort_values(["published", "paper_id"], ascending=[False, True]).reset_index(drop=True)

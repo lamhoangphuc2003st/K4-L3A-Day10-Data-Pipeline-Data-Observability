@@ -11,7 +11,7 @@
 Đừng để nhiều file tài liệu làm bạn bị ngợp! Toàn bộ tài liệu chi tiết được quy hoạch gọn gàng trong thư mục [`docs/`](docs/):
 - 🚀 **Bắt tay vào làm ngay:** Mở [Hướng Dẫn Kỹ Thuật Chi Tiết (docs/Guide.md)](docs/Guide.md) và bám sát tiến trình [Các Mốc Thời Gian (docs/CHECKPOINTS.md)](docs/CHECKPOINTS.md).
 - 🎯 **Hiểu luật chơi & thang điểm:** Xem [Tiêu Chí Chấm Điểm (docs/RUBRIC.md)](docs/RUBRIC.md) và [Nội Quy Thực Hành (docs/RULES.md)](docs/RULES.md).
-- 📋 **Schema và nộp bài:** Dùng [Hợp Đồng Dữ Liệu](docs/DATA_CONTRACT.md), điền [Phân Công Nhóm](docs/TEAM.md), và đối chiếu [Hướng Dẫn Nộp Bài](docs/SUBMISSION.md).
+- 📋 **Phân công & nộp bài cuối giờ:** Điền thông tin vào [Phân Công Nhóm (docs/TEAM.md)](docs/TEAM.md) và đối chiếu checklist tại [Hướng Dẫn Nộp Bài (docs/SUBMISSION.md)](docs/SUBMISSION.md).
 
 ---
 
@@ -102,7 +102,7 @@ Starter Repo được cấu trúc dạng module hóa rõ ràng:
 │   ├── raw/                 <- Chứa 2 file snapshot mẫu (crossref_response.json & records)
 │   ├── clean/               <- Nơi xuất dữ liệu đã làm sạch
 │   ├── chroma/              <- Database vector ChromaDB
-│   ├── eval/                <- Benchmark cố định 5 câu / 5 loại
+│   ├── eval/                <- File test set benchmark
 │   ├── quality/             <- Báo cáo Great Expectations và Freshness SLA
 │   ├── reports/             <- Báo cáo Markdown (phase1_report.md, corruption_report.md)
 │   └── results/             <- File JSON ghi nhận chỉ số (baseline, corrupted, repaired)
@@ -119,17 +119,17 @@ Starter Repo được cấu trúc dạng module hóa rõ ràng:
 ├── docs/                    <- Thư mục tài liệu hướng dẫn, quy chuẩn và rubric của bài lab
 │   ├── Guide.md             <- Hướng dẫn kỹ thuật chi tiết từng bước
 │   ├── CHECKPOINTS.md       <- Tiến trình & nhiệm vụ từng mốc thời gian
-│   ├── DATA_CONTRACT.md     <- Schema và quy tắc dùng chung giữa các module
 │   ├── RUBRIC.md            <- Tiêu chí chấm điểm chi tiết (100đ chuẩn + 10đ bonus)
 │   ├── RULES.md             <- Nội quy & liêm chính học thuật
 │   ├── SUBMISSION.md        <- Hướng dẫn nộp bài & checklist kiểm tra
 │   └── TEAM.md              <- Phân công nhóm & báo cáo cá nhân
-├── .env.example             <- File mẫu cấu hình LLM provider
+├── .env.example             <- File mẫu cấu hình API key
 ├── README.md                <- Tài liệu tổng quan bài lab & bản đồ chỉ dẫn
 └── pyproject.toml           <- Quản lý dependencies (Python 3.11-3.13)
 ```
 
-Các pipeline CP1–CP5 đã được triển khai. Xem [Guide.md](docs/Guide.md) để chạy từng bước và [DATA_CONTRACT.md](docs/DATA_CONTRACT.md) để biết schema dùng chung.
+> ⚠️ **LƯU Ý VỀ CODE KHUNG:**  
+> Các file trong `src/` chứa các khối `TODO(student)` và `raise NotImplementedError`. Đây là bài tập thiết kế kỹ thuật, nhóm cần đọc kỹ docstring và hoàn thiện từng module theo thứ tự hướng dẫn trong [Guide.md](docs/Guide.md).
 
 ---
 
@@ -185,15 +185,12 @@ Copy-Item .env.example .env
 # macOS / Linux:
 cp .env.example .env
 ```
-Mặc định dùng Ollama cục bộ, không cần cloud API key. Đảm bảo Ollama đang chạy và model đã được tải (`ollama pull llama3.1`), sau đó cấu hình:
+Mở file `.env` và điền API Key tương ứng (mặc định hỗ trợ `gemini`, `openai`, `anthropic`, `ollama`):
 ```dotenv
-LLM_PROVIDER=ollama
-LLM_MODEL=llama3.1
-OLLAMA_BASE_URL=http://localhost:11434
+LLM_PROVIDER=gemini
+LLM_MODEL=gemini-2.5-flash
+GOOGLE_API_KEY=your_gemini_api_key_here
 ```
-Có thể chọn provider khác (`gemini`, `openai`, `anthropic`, `openrouter`, `custom`, `mock`) trong `.env`.
-
-> Lần chạy đầu tiên có thể cần tải mô hình embedding MiniLM. Ollama được dùng cho LLM Judge; embedding vẫn dùng Sentence Transformers.
 
 ---
 
@@ -212,10 +209,9 @@ Có thể chọn provider khác (`gemini`, `openai`, `anthropic`, `openrouter`, 
 - [ ] **Môi trường:** Chạy lệnh smoke test in ra `Môi trường sẵn sàng`.
 - [ ] **Pha 1 (Baseline):** Lệnh `python script/run_phase1.py` chạy trơn tru, sinh đầy đủ:
   - `data/clean/papers_clean.csv`
-  - `data/eval/test_set.json` (5 câu / 5 loại theo PHA 3)
+  - `data/eval/test_set.json`
   - `data/results/baseline_metrics.json`
   - `data/reports/phase1_report.md`
-- [ ] **Benchmark:** đủ `summary`, `authors`, `date`, `category`, `multi_hop`; metrics tách Hit Rate vector khỏi Hit Rate hybrid.
 - [ ] **Pha 2 (Corruption & Repair):** Lệnh `python script/run_corruption_flow.py` chạy thành công, tạo ra:
   - `data/results/corruption_log.json` (ghi nhận 6 dạng lỗi)
   - `data/results/corrupted_metrics.json` (chứng minh chỉ số giảm sút)

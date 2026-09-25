@@ -1,15 +1,10 @@
 {
-  "run_date": "2026-09-25T09:28:33.782819+00:00",
-  "thresholds": {
-    "stale_after_days": 180,
-    "maximum_stale_rate": 0.25
-  },
+  "latest_published": "2026-07-22",
+  "oldest_published": "2026-03-28",
+  "stale_threshold_days": 180,
+  "stale_rows": 1,
   "total_rows": 24,
-  "stale_rows": 0,
-  "invalid_date_rows": 0,
-  "fresh_rows": 24,
-  "stale_rate": 0.0,
-  "is_fresh": true,
-  "oldest_published": "2026-04-01T00:00:00+00:00",
-  "latest_published": "2026-09-15T00:00:00+00:00"
+  "stale_ratio": 0.0417,
+  "max_stale_ratio": 0.25,
+  "is_fresh": true
 }

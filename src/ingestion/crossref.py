@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from datetime import date
-from html import unescape
 from pathlib import Path
 import re
 import time
@@ -11,6 +9,11 @@ import requests
 
 from core.config import Settings
 from core.utils import normalize_whitespace, read_json, write_json
+
+
+CROSSREF_URL = "https://api.crossref.org/works"
+RETRY_STATUS_CODES = {429, 500, 502, 503, 504}
+MAX_RETRIES = 3
 
 
 @dataclass(frozen=True)
@@ -28,81 +31,116 @@ class PaperRecord:
     comment: str
 
 
-def _plain(value: object) -> str:
-    return normalize_whitespace(unescape(re.sub(r"<[^>]*>", " ", str(value or ""))))
+def _strip_markup(text: str) -> str:
+    """Remove JATS/HTML tags (e.g. <jats:p>) and normalize whitespace."""
+    return normalize_whitespace(re.sub(r"<[^>]+>", " ", text or ""))
 
 
-def _date(value: object) -> str:
-    if not isinstance(value, dict):
-        return ""
-    parts = value.get("date-parts", [[]])
-    if not parts or not parts[0]:
-        return ""
-    try:
-        year, *rest = parts[0]
-        return date(int(year), int(rest[0]) if rest else 1, int(rest[1]) if len(rest) > 1 else 1).isoformat()
-    except (TypeError, ValueError, IndexError):
-        return ""
+def _date_from_parts(value: dict | None) -> str | None:
+    parts = ((value or {}).get("date-parts") or [[]])[0]
+    if not parts or parts[0] is None:
+        return None
+    year = int(parts[0])
+    month = int(parts[1]) if len(parts) > 1 and parts[1] else 1
+    day = int(parts[2]) if len(parts) > 2 and parts[2] else 1
+    return f"{year:04d}-{month:02d}-{day:02d}"
+
+
+def _published_date(item: dict) -> str | None:
+    for key in ("published", "published-online", "published-print", "issued"):
+        parsed = _date_from_parts(item.get(key))
+        if parsed:
+            return parsed
+    created = (item.get("created") or {}).get("date-time")
+    return created[:10] if created else None
 
 
 def parse_crossref_payload(payload: dict) -> list[PaperRecord]:
-    records = []
+    records: list[PaperRecord] = []
     for item in payload.get("message", {}).get("items", []):
-        doi = normalize_whitespace(str(item.get("DOI") or "")).lower()
-        titles = item.get("title") or []
-        title = _plain(titles[0] if isinstance(titles, list) and titles else titles)
-        published = (_date(item.get("published")) or _date(item.get("published-print"))
-                 or _date(item.get("published-online")) or _date(item.get("created")))
-        if not doi or not title or not published:
+        doi = normalize_whitespace(item.get("DOI", ""))
+        title = normalize_whitespace((item.get("title") or [""])[0])
+        summary = _strip_markup(item.get("abstract", ""))
+        published = _published_date(item)
+        if not doi or not title or not summary or not published:
             continue
-        authors = [name for author in item.get("author", []) if (name := normalize_whitespace(
-            f"{author.get('given', '')} {author.get('family', '')}"
-        ))]
-        categories = [_plain(subject) for subject in item.get("subject", []) if _plain(subject)]
-        url = str(item.get("URL") or f"https://doi.org/{doi}")
-        links = item.get("link") or []
-        pdf_url = next((str(link.get("URL")) for link in links if "pdf" in str(link.get("content-type", "")).lower()), url)
-        records.append(PaperRecord(
-            paper_id=doi, title=title, summary=_plain(item.get("abstract")),
-            authors=authors, categories=categories, primary_category=categories[0] if categories else "",
-            published=published, updated=_date(item.get("updated")) or published,
-            abs_url=url, pdf_url=pdf_url, comment=f"Crossref record {doi}",
-        ))
+
+        authors = [
+            normalize_whitespace(f"{a.get('given', '')} {a.get('family', '')}")
+            for a in item.get("author", [])
+        ]
+        authors = [a for a in authors if a]
+        categories = [normalize_whitespace(s) for s in item.get("subject", []) if s]
+        url = item.get("URL") or f"https://doi.org/{doi}"
+        updated = (
+            _date_from_parts(item.get("deposited"))
+            or _date_from_parts(item.get("indexed"))
+            or published
+        )
+        records.append(
+            PaperRecord(
+                paper_id=doi,
+                title=title,
+                summary=summary,
+                authors=authors,
+                categories=categories,
+                primary_category=categories[0] if categories else "",
+                published=published,
+                updated=updated,
+                abs_url=url,
+                pdf_url=url,
+                comment=f"Crossref record {doi}",
+            )
+        )
     return records
 
 
+def _request_live(settings: Settings) -> dict:
+    params = {
+        "query": settings.source_query,
+        "filter": settings.source_filter,
+        "rows": settings.max_results,
+        "sort": "published",
+        "order": "desc",
+    }
+    last_error: Exception | None = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = requests.get(CROSSREF_URL, params=params, timeout=30)
+            if response.status_code in RETRY_STATUS_CODES:
+                last_error = RuntimeError(f"Crossref returned {response.status_code}")
+                time.sleep(2**attempt)
+                continue
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            last_error = exc
+            time.sleep(2**attempt)
+    raise RuntimeError(f"Crossref API unavailable: {last_error}")
+
+
 def fetch_source_records(settings: Settings) -> list[PaperRecord]:
-    path = settings.paths.raw_api_response
-    if settings.refresh_source:
-        for attempt in range(3):
-            try:
-                response = requests.get(
-                    "https://api.crossref.org/works",
-                    params={"query": settings.source_query, "filter": settings.source_filter, "rows": settings.max_results},
-                    headers={"User-Agent": "day10-data-observability-lab/0.1"}, timeout=30,
-                )
-                response.raise_for_status()
-                payload = response.json()
-                records = parse_crossref_payload(payload)
-                if not records:
-                    raise ValueError("Crossref returned no usable records")
-                write_json(path, payload)
-                write_json(settings.paths.raw_records_json, [asdict(record) for record in records])
-                return records
-            except (requests.RequestException, ValueError):
-                if attempt < 2:
-                    time.sleep(2 ** attempt)
-    if not path.exists():
-        raise FileNotFoundError(f"No Crossref snapshot available: {path}")
-    records = parse_crossref_payload(read_json(path))
-    if not records:
-        raise ValueError(f"Crossref snapshot has no usable records: {path}")
-    write_json(settings.paths.raw_records_json, [asdict(record) for record in records])
+    """Dev/offline mode reads the local snapshot; REFRESH_SOURCE=1 calls the live API.
+
+    A failed live call (429/503/no network) falls back to the snapshot.
+    """
+    paths = settings.paths
+    payload: dict | None = None
+    if settings.refresh_source or not paths.raw_api_response.exists():
+        try:
+            payload = _request_live(settings)
+            write_json(paths.raw_api_response, payload)
+        except RuntimeError as exc:
+            if not paths.raw_api_response.exists():
+                raise
+            print(f"[crossref] {exc}; falling back to snapshot {paths.raw_api_response}")
+    if payload is None:
+        payload = read_json(paths.raw_api_response)
+
+    records = parse_crossref_payload(payload)
+    write_json(paths.raw_records_json, [asdict(record) for record in records])
     return records
 
 
 def load_raw_records(path: Path) -> list[PaperRecord]:
-    payload = read_json(path)
-    if not isinstance(payload, list):
-        raise ValueError("Raw records must be a JSON list")
-    return [PaperRecord(**item) for item in payload]
+    return [PaperRecord(**row) for row in read_json(path)]
